@@ -10,30 +10,30 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class UserDetailsImpl implements UserDetails {
-    private final User user;
+    private final Users users;
 
-    public UserDetailsImpl(User user) {
-        this.user = user;
+    public UserDetailsImpl(Users users) {
+        this.users = users;
     }
 
-    public User getUser() {
-        return user;
+    public Users getUsers() {
+        return users;
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return users.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return getUserId();
+        return users.getEmail();
     }
 
     @Override // 권한설정할때 사용함
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        UserRoleEnum role = user.getRole();
-        String authority = role.getAuthority();
+        UserRoleEnum userRole = users.getUserRole();
+        String authority = userRole.getAuthority();
 
         SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
         Collection<GrantedAuthority> authorities = new ArrayList<>();
@@ -62,7 +62,7 @@ public class UserDetailsImpl implements UserDetails {
         return true;
     }
 
-    public String getUserId() {
-        return this.user.getUserId();
+    public String getEmail() {
+        return this.users.getEmail();
     }
 }
