@@ -18,9 +18,9 @@ import java.util.Date;
 @Slf4j(topic = "JwtUtil")
 @Component
 public class JwtUtil {
-    private static final String AUTHORIZATION_HEADER = "Authorization"; // 헤더의 키값
+    public static final String AUTHORIZATION_HEADER = "Authorization"; // 헤더의 키값
     public static final String AUTHORIZATION_KEY = "auth"; // 토큰의 키값
-    public static final String BEARER_PREFIX = "Bearer"; // 토큰 접두사
+    public static final String BEARER_PREFIX = "Bearer "; // 토큰 접두사
     private final long TOKEN_TIME = 60 * 60 * 1000L; // 60분 설정
 
     @Value("${jwt.secret.key}")
