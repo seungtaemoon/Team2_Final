@@ -6,11 +6,11 @@ import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.users.dto.SignoutRequestDto;
 import com.sparta.team2project.users.dto.SignupRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -23,7 +23,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     // ADMIN_TOKEN
-    private final String ADMIN_TOKEN = "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC";
+    @Value("${ADMIN_TOKEN}")
+    private String ADMIN_TOKEN;
 
     public ResponseEntity<MessageResponseDto> signup(SignupRequestDto requestDto) {
         String email = requestDto.getEmail();
