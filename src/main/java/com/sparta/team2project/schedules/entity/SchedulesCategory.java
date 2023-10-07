@@ -9,4 +9,4 @@ public enum SchedulesCategory {
     즐길거리,
     음식;
 }
-    
+

@@ -1,5 +1,6 @@
 package com.sparta.team2project.days.entity;
 
+import com.sparta.team2project.posts.dto.DayRequestDto;
 import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.schedules.entity.Schedules;
 import jakarta.persistence.*;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -24,14 +26,16 @@ public class Days {
     private LocalDate chosenDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "posts_id")
+    @JoinColumn(name = "posts_id",nullable = false)
     private Posts posts;
 
     @OneToMany(mappedBy = "days", cascade = {CascadeType.REMOVE})
-    private List<Schedules> scheduleList;
+    private List<Schedules> scheduleList = new ArrayList<>();
 
-    public Days(LocalDate chosenDate, Posts posts) {
-        this.chosenDate = chosenDate;
+    public Days(DayRequestDto dayRequestDto, Posts posts) {
+        this.chosenDate = dayRequestDto.getChosenDate();
         this.posts = posts;
+        this.scheduleList = dayRequestDto.getScheduleList();
+
     }
 }

@@ -14,6 +14,10 @@ import com.sparta.team2project.postslike.entity.PostsLike;
 import com.sparta.team2project.postslike.repository.PostsLikeRepository;
 import com.sparta.team2project.schedules.entity.Schedules;
 import com.sparta.team2project.schedules.repository.SchedulesRepository;
+import com.sparta.team2project.users.UserController;
+import com.sparta.team2project.users.UserRepository;
+import com.sparta.team2project.users.UserRoleEnum;
+import com.sparta.team2project.users.Users;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,39 +35,43 @@ public class PostsService {
     private final DaysRepository daysRepository;
     private final SchedulesRepository schedulesRepository;
     private final PostsLikeRepository postsLikeRepository;
-    //private final UsersRepository usersRepository;
-    public MessageResponseDto createPost(TotalRequestDto totalRequestDto) { //Users users 추가하기
-//        Users existUser = checkUser(users); // 유저 확인
-//
-//        //권한 확인
-//        checkAuthority(existUser, users);
+    private final UserRepository usersRepository;
 
-        Posts posts = new Posts(totalRequestDto.getLikeNum(),
-                                totalRequestDto.getContents(),
+    // 게시글 생성
+    public MessageResponseDto createPost(TotalRequestDto totalRequestDto,Users users) {
+
+        Users existUser = checkUser(users); // 유저 확인
+
+        //권한 확인
+        checkAuthority(existUser,users);
+
+        Posts posts = new Posts(totalRequestDto.getContents(),
                                 totalRequestDto.getTitle(),
                                 totalRequestDto.getPostCategory(),
                                 totalRequestDto.getStartDate(),
-                                totalRequestDto.getEndDate());
-                                //existUser);
+                                totalRequestDto.getEndDate(),
+                                existUser);
         postsRepository.save(posts);  //posts 저장
 
         List<DayRequestDto> dayRequestDtoList = totalRequestDto.getDayList();
         for(DayRequestDto dayRequestDto:dayRequestDtoList){
-            LocalDate date = dayRequestDto.getChosenDate();
-            Days days = new Days(date,posts);
+            Days days = new Days(dayRequestDto,posts);
             daysRepository.save(days); // days 저장
 
-            List<Schedules>schedulesList=dayRequestDto.getScheduleList();
-            for(Schedules schedules:schedulesList) {
-                Schedules schedule = new Schedules(days,schedules);
-                schedulesRepository.save(schedule); //스케줄 저장
+            List<Schedules>schedulesList=new ArrayList<>();
+            for(Schedules schedules:dayRequestDto.getScheduleList()) {
+                schedules = new Schedules(days,schedules);
+                schedulesList.add(schedules);
             }
+            schedulesRepository.saveAll(schedulesList);
         }
 
         return new MessageResponseDto("게시글이 등록 되었습니다.", HttpServletResponse.SC_OK);
     }
 
+    // 게시글 전체 조회
     public List<PostResponseDto> getAllPost() {
+
         List<Posts> postsList = postsRepository.findAllByOrderByCreatedAtDesc();
         List<PostResponseDto> postResponseDtoList = new ArrayList<>();
         for(Posts posts:postsList){
@@ -72,13 +80,14 @@ public class PostsService {
         return postResponseDtoList;
     }
 
+    // 게시글 좋아요 및 좋아요 취소
     public MessageResponseDto like(Long id, Users users){
-         Posts posts = checkPosts(id);
+         Posts posts = checkPosts(id); // 게시글 확인
 
-//        Users existUser = checkUser(users); // 유저 확인
-//
-//        //권한 확인
-//        checkAuthority(existUser, users);
+        Users existUser = checkUser(users); // 사용자 확인
+
+        //권한 확인
+        checkAuthority(existUser,users);
         PostsLike overlap = postsLikeRepository.findByPostsAndUsers(posts,existUser);
         if(overlap!=null){
             postsLikeRepository.delete(overlap); // 좋아요 삭제
@@ -93,16 +102,20 @@ public class PostsService {
         }
     }
 
-//    private Users checkUser (Users users) {
-//        return usersRepository.findByEmail(users.getEmail()).
-//                orElseThrow(() -> new CustomException(ErrorCode.ID_NOT_MATCH));
-//
-//    }
-//      private void checkAuthority(Users existUser,Users users){
-//          if (!existUser.getRole().equals(UserRoleEnum.ADMIN)&&!existUser.getEmail().equals(users.getEmail())) {
-//            throw new CustomException(ErrorCode.NOT_ALLOWED);
-//        }
-//      }
+    // 사용자 확인 메서드
+    private Users checkUser (Users users) {
+        return usersRepository.findByEmail(users.getEmail()).
+                orElseThrow(() -> new CustomException(ErrorCode.ID_NOT_MATCH));
+
+    }
+     // ADMIN 권한 및 이메일 일치여부 메서드
+    private void checkAuthority(Users existUser,Users users){
+        if (!existUser.getUserRole().equals(UserRoleEnum.ADMIN)&&!existUser.getEmail().equals(users.getEmail())) {throw new CustomException(ErrorCode.NOT_ALLOWED);
+        }
+
+    }
+
+    // 게시글 확인 메서드
     private Posts checkPosts(Long id) {
         return postsRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_EXIST));
     }

@@ -1,6 +1,7 @@
 package com.sparta.team2project.posts.entity;
 
 import com.sparta.team2project.commons.timestamped.TimeStamped;
+import com.sparta.team2project.users.Users;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,18 +41,17 @@ public class Posts extends TimeStamped {
     private LocalDate endDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "users_id")
+    @JoinColumn(name = "users_id",nullable = false)
     private Users users;
 
 
-    public Posts(int likeNum, String contents, String title, PostCategory postCategory, LocalDate startDate, LocalDate endDate) {//user 추가
-        this.likeNum = likeNum;
+    public Posts(String contents, String title, PostCategory postCategory, LocalDate startDate, LocalDate endDate,Users users) {
         this.contents = contents;
         this.title = title;
         this.postCategory = postCategory;
         this.startDate = startDate;
         this.endDate = endDate;
-        //this.users = users;
+        this.users = users;
     }
 
     public void unlike() {

@@ -4,6 +4,7 @@ import com.sparta.team2project.days.entity.Days;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalTime;
 
@@ -33,11 +34,11 @@ public class Schedules {
     @Column(name = "contents", nullable = false)
     private String contents;
     // 시작날짜
-    @Column(name = "startDate", nullable = false)
-    private LocalTime startDate;
+    @Column(name = "startTime", nullable = false)
+    private LocalTime startTime;
     // 종료날짜
-    @Column(name = "endDate", nullable = false)
-    private LocalTime endDate;
+    @Column(name = "endTime", nullable = false)
+    private LocalTime endTime;
 
     // 날짜별 여행계획(Days)와 양방향 관계
     @ManyToOne(fetch = FetchType.LAZY)
@@ -46,12 +47,13 @@ public class Schedules {
 
     public Schedules(Days days,Schedules schedules) {
         this.days=days;
-        this.schedulesCategory=schedules.getSchedulesCategory();
-        this.endDate=schedules.getEndDate();
-        this.startDate=schedules.getStartDate();
-        this.costs=schedules.getCosts();
-        this.contents=schedules.getContents();
-        this.placeName=schedules.getPlaceName();
-        this.details= schedules.getDetails();
+        this.schedulesCategory = schedules.getSchedulesCategory();
+        this.contents = schedules.getContents();
+        this.details = schedules.getDetails();
+        this.costs = schedules.getCosts();
+        this.placeName =schedules.getPlaceName();
+        this.startTime=schedules.getStartTime();
+        this.endTime=schedules.getEndTime();
+
     }
 }

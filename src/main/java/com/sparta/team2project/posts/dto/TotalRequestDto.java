@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 public class TotalRequestDto {
 
-    private int likeNum;
+
     private String title;
     private String contents;
     private PostCategory postCategory;
