@@ -21,14 +21,16 @@ public class Users {
     private String password;
 
     @Column(nullable = false)
-    private String nickName = "익명"; // 기본값 설정
+    private String nickName;
+//    private String nickName = "익명"; // 기본값 설정
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
-    private UserRoleEnum userRole = UserRoleEnum.USER; // 기본값 설정
+    private UserRoleEnum userRole; // 기본값 설정
 
     @Column(nullable = false)
-    private String profileImg = "https://blog.kakaocdn.net/dn/bEuUJE/btsxkC03HfA/KfYkjsCIVSMk3rxSnUiO9K/img.png"; // 기본값 설정
+    private String profileImg;
+//    private String profileImg = "https://blog.kakaocdn.net/dn/bEuUJE/btsxkC03HfA/KfYkjsCIVSMk3rxSnUiO9K/img.png"; // 기본값 설정
 
 // 연관관계
 //    @OneToMany(mappedBy = "users")

@@ -1,7 +1,9 @@
 package com.sparta.team2project.users;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
+import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
+import com.sparta.team2project.users.dto.SignoutRequestDto;
 import com.sparta.team2project.users.dto.SignupRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,8 +32,7 @@ public class UserService {
         // 회원 중복 확인
         Optional<Users> checkUserId = userRepository.findByEmail(email);
         if (checkUserId.isPresent()) {
-            return ResponseEntity.status(ErrorCode.DUPLICATED_EMAIL.getStatusCode())
-                    .body(new MessageResponseDto(ErrorCode.DUPLICATED_EMAIL.getMsg(), ErrorCode.DUPLICATED_EMAIL.getStatusCode().value()));
+            throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
         }
 
         // 사용자 ROLE 확인
@@ -42,24 +43,38 @@ public class UserService {
 
         }
 
+        // 기본값 설정
+        String nickName = "익명";
+        String profileImg = "https://blog.kakaocdn.net/dn/ckw6CM/btsxrWYLmoZ/IW4PRNSDLAWNZEKkZO0qM1/img.png";
+
+        // 입력값이 존재한다면 기본값 대체
+        if (requestDto.getNickName() != null) {
+            nickName = requestDto.getNickName();
+        }
+        if (requestDto.getProfileImg() != null) {
+            profileImg = requestDto.getProfileImg();
+        }
+
         // 사용자 등록
-        Users user = new Users(email, password, userRole);
+        Users user = new Users(email, nickName, password, userRole, profileImg);
         userRepository.save(user);
 
         // DB에 중복된 email 이 없다면 회원을 저장하고 Client 로 성공했다는 메시지, 상태코드 반환하기
         return ResponseEntity.ok(new MessageResponseDto("회원가입 완료", HttpStatus.CREATED.value()));
     }
 
-// 회원탈퇴
-//    public ResponseEntity<String> deleteUser(SignoutRequestDto requestDto, String userId) {
-//        Users user = userRepository.findByUserId(userId).orElseThrow(
-//                () -> new IllegalArgumentException("등록된 아이디가 없습니다.")
-//        );
-//        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
-//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-//        }
-//        userRepository.delete(user);
-//        return ResponseEntity.ok("회원탈퇴가 완료되었습니다.");
-//
-//    }
+
+
+    // 회원탈퇴
+    public ResponseEntity<MessageResponseDto> deleteUser(SignoutRequestDto requestDto, String email) {
+        Users users = userRepository.findByEmail(email).orElseThrow(
+                () -> new IllegalArgumentException("등록된 아이디가 없습니다.")
+        );
+        if (!passwordEncoder.matches(requestDto.getPassword(), users.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+        userRepository.delete(users);
+        return ResponseEntity.ok(new MessageResponseDto("회원탈퇴 완료", HttpStatus.OK.value()));
+
+    }
 }

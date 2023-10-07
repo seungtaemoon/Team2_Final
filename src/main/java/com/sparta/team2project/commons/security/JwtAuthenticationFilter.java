@@ -49,7 +49,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                     )
             );
         } catch (IOException e) {
-            log.error("예외 발생", e);
             throw new RuntimeException("요청 처리 중 오류가 발생했습니다.");
         }
     }
