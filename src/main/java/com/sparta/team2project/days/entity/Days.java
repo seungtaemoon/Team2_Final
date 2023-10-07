@@ -23,11 +23,15 @@ public class Days {
     @Column(nullable = false)
     private LocalDate chosenDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "posts_id")
     private Posts posts;
 
     @OneToMany(mappedBy = "days", cascade = {CascadeType.REMOVE})
     private List<Schedules> scheduleList;
 
+    public Days(LocalDate chosenDate, Posts posts) {
+        this.chosenDate = chosenDate;
+        this.posts = posts;
+    }
 }
