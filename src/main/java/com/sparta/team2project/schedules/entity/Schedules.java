@@ -41,5 +41,17 @@ public class Schedules {
 
     // 날짜별 여행계획(Days)와 양방향 관계
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="days_id")
     private Days days;
+
+    public Schedules(Days days,Schedules schedules) {
+        this.days=days;
+        this.schedulesCategory=schedules.getSchedulesCategory();
+        this.endDate=schedules.getEndDate();
+        this.startDate=schedules.getStartDate();
+        this.costs=schedules.getCosts();
+        this.contents=schedules.getContents();
+        this.placeName=schedules.getPlaceName();
+        this.details= schedules.getDetails();
+    }
 }

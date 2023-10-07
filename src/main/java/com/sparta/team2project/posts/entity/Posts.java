@@ -1,5 +1,6 @@
 package com.sparta.team2project.posts.entity;
 
+import com.sparta.team2project.commons.timestamped.TimeStamped;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.util.List;
 @Table(name = "posts")
 @Getter
 @NoArgsConstructor
-public class Posts {
+public class Posts extends TimeStamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -38,7 +39,7 @@ public class Posts {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_id")
     private Users users;
 
@@ -51,5 +52,13 @@ public class Posts {
         this.startDate = startDate;
         this.endDate = endDate;
         //this.users = users;
+    }
+
+    public void unlike() {
+        this.likeNum-=1;
+    }
+
+    public void like() {
+        this.likeNum+=1;
     }
 }
