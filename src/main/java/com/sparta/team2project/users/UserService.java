@@ -3,6 +3,8 @@ package com.sparta.team2project.users;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
+import com.sparta.team2project.profile.Profile;
+import com.sparta.team2project.profile.ProfileRepository;
 import com.sparta.team2project.users.dto.SignoutRequestDto;
 import com.sparta.team2project.users.dto.SignupRequestDto;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ProfileRepository profileRepository;
 
     // ADMIN_TOKEN
     @Value("${ADMIN_TOKEN}")
@@ -57,10 +60,12 @@ public class UserService {
         }
 
         // 사용자 등록
-        Users user = new Users(email, nickName, password, userRole, profileImg);
-        userRepository.save(user);
+        Users users = new Users(email, nickName, password, userRole, profileImg);
+        userRepository.save(users);
+        // 프로필 생성
+        Profile profile = new Profile(users, users.getPassword(), users.getNickName(), users.getProfileImg());
+        profileRepository.save(profile);
 
-        // DB에 중복된 email 이 없다면 회원을 저장하고 Client 로 성공했다는 메시지, 상태코드 반환하기
         return ResponseEntity.ok(new MessageResponseDto("회원가입 완료", HttpStatus.CREATED.value()));
     }
 

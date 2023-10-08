@@ -36,14 +36,7 @@ public class Users {
 //    @OneToMany(mappedBy = "users")
 //    private Posts posts;
 
-//// 회원 가입
-//    public Users(String email, String password, UserRoleEnum userRole) {
-//        this.email = email;
-//        this.password = password;
-//        this.userRole = userRole;
-//    }
-
-    // 회원 가입 후 프로필 수정?
+    // 회원 가입
     public Users(String email, String nickName, String password, UserRoleEnum userRole, String profileImg) {
         this.email = email;
         this.nickName = nickName;
@@ -52,10 +45,21 @@ public class Users {
         this.profileImg = profileImg;
     }
 
-
-    public Users(String email, String password, UserRoleEnum userRole) {
+    public Users(String email, String nickName, String password, String profileImg) {
         this.email = email;
+        this.nickName = nickName;
         this.password = password;
-        this.userRole = userRole;
+        this.profileImg = profileImg;
     }
+
+//    // 회원 정보 수정
+//    public void updateProfile(String newNickName, String newProfileImg) {
+//        // 새로운 닉네임이 제공된 경우에만 업데이트
+//        if (newNickName != null) {
+//            this.nickName = newNickName;
+//        }
+//        if (newProfileImg != null) {
+//            this.profileImg = newProfileImg;
+//        }
+//    }
 }
