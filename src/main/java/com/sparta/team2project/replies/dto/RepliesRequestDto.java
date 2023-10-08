@@ -1,9 +1,10 @@
-package com.sparta.team2project.comments.dto;
+package com.sparta.team2project.replies.dto;
 
 import lombok.Getter;
 
 @Getter
-public class CommentsRequestDto {
+public class RepliesRequestDto {
     private String nickname;
     private String contents;
 }
+
