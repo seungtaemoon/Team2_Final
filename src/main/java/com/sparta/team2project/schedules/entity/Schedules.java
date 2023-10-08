@@ -1,6 +1,7 @@
 package com.sparta.team2project.schedules.entity;
 
 import com.sparta.team2project.commons.timestamped.TimeStamped;
+import com.sparta.team2project.commons.timestamped.TimeStamped;
 import com.sparta.team2project.days.entity.Days;
 import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
 import jakarta.persistence.*;
@@ -41,9 +42,6 @@ public class Schedules extends TimeStamped {
     // 종료날짜
     @Column(name = "endTime", nullable = false)
     private LocalTime endTime;
-
-    // 선택일자(변수 지정 필요한지 확인)
-    private LocalDate chosenDate;
 
     // 날짜별 여행계획(Days)와 양방향 관계
     @ManyToOne(fetch = FetchType.LAZY)

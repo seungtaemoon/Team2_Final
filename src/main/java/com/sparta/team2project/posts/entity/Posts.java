@@ -40,13 +40,12 @@ public class Posts extends TimeStamped {
     @Column(nullable = false)
     private LocalDate endDate;
 
-    @ManyToOne
-    @JoinColumn(name = "users_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "users_id",nullable = false)
     private Users users;
 
 
-    public Posts(int likeNum, String contents, String title, PostCategory postCategory, LocalDate startDate, LocalDate endDate, Users users) {//user 추가
-        this.likeNum = likeNum;
+    public Posts(String contents, String title, PostCategory postCategory, LocalDate startDate, LocalDate endDate,Users users) {
         this.contents = contents;
         this.title = title;
         this.postCategory = postCategory;
