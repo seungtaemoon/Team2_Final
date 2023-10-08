@@ -1,6 +1,7 @@
 package com.sparta.team2project.postslike.entity;
 
 import com.sparta.team2project.posts.entity.Posts;
+import com.sparta.team2project.users.Users;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 
@@ -17,10 +18,10 @@ public class PostsLike {
     private Posts posts;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "users_id")
     private Users users;
 
-    public BoardLike(Posts posts, Users users) {
+    public PostsLike(Posts posts, Users users) {
         this.posts = posts;
         this.users = users;
 

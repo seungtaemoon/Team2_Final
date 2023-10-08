@@ -1,6 +1,7 @@
 package com.sparta.team2project.posts.controller;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
+import com.sparta.team2project.commons.security.UserDetailsImpl;
 import com.sparta.team2project.posts.dto.PostResponseDto;
 import com.sparta.team2project.posts.dto.TotalRequestDto;
 import com.sparta.team2project.posts.service.PostsService;
@@ -19,8 +20,8 @@ public class PostsController {
     private final PostsService postsService;
 
     @PostMapping("/posts")
-    public ResponseEntity<MessageResponseDto> createPost(@RequestBody TotalRequestDto totalRequestDto){ //@AuthenticationPrincipal UserDetailsImpl userDetails 추가
-        return ResponseEntity.ok(postsService.createPost(totalRequestDto));
+    public ResponseEntity<MessageResponseDto> createPost(@RequestBody TotalRequestDto totalRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return ResponseEntity.ok(postsService.createPost(totalRequestDto, userDetails.getUsers()));
     }
 
     @GetMapping("/posts")
@@ -30,6 +31,6 @@ public class PostsController {
 
     @GetMapping("/posts/like/{postId}")
     public ResponseEntity<MessageResponseDto> like(@PathVariable Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(postsService.like(postId,userDetails.getUser()));
+        return ResponseEntity.ok(postsService.like(postId,userDetails.getUsers()));
     }
 }

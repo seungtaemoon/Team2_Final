@@ -1,20 +1,14 @@
 package com.sparta.team2project.comments.service;
 
-import com.sparta.team2project.comments.dto.CommentsRequestDto;
-import com.sparta.team2project.comments.dto.CommentsResponseDto;
 import com.sparta.team2project.comments.repository.CommentsRepository;
-import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.jwtutil.JwtUtil;
-import com.sparta.team2project.commons.security.UserDetailsImpl;
-import com.sparta.team2project.postrs.entity.Posts;
-import com.sparta.team2project.postrs.repository.PostsRepository;
+import com.sparta.team2project.posts.entity.Posts;
+import com.sparta.team2project.posts.repository.PostsRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.Comments;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

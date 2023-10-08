@@ -1,10 +1,13 @@
 package com.sparta.team2project.schedules.entity;
 
+import com.sparta.team2project.commons.timestamped.TimeStamped;
 import com.sparta.team2project.days.entity.Days;
+import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 
@@ -12,7 +15,7 @@ import java.time.LocalTime;
 @Getter
 @NoArgsConstructor
 @Table(name="schedules")
-public class Schedules {
+public class Schedules extends TimeStamped {
     // 일정 아이디
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,25 +36,46 @@ public class Schedules {
     @Column(name = "contents", nullable = false)
     private String contents;
     // 시작날짜
-    @Column(name = "startDate", nullable = false)
-    private LocalTime startDate;
+    @Column(name = "startTime", nullable = false)
+    private LocalTime startTime;
     // 종료날짜
-    @Column(name = "endDate", nullable = false)
-    private LocalTime endDate;
+    @Column(name = "endTime", nullable = false)
+    private LocalTime endTime;
+
+    // 선택일자(변수 지정 필요한지 확인)
+    private LocalDate chosenDate;
 
     // 날짜별 여행계획(Days)와 양방향 관계
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="days_id")
     private Days days;
 
-    public Schedules(Days days,Schedules schedules) {
-        this.days=days;
+    public Schedules(Days days, Schedules schedules) {
+        this.days = days;
         this.schedulesCategory=schedules.getSchedulesCategory();
-        this.endDate=schedules.getEndDate();
-        this.startDate=schedules.getStartDate();
+        this.endTime=schedules.getEndTime();
+        this.startTime=schedules.getStartTime();
         this.costs=schedules.getCosts();
         this.contents=schedules.getContents();
         this.placeName=schedules.getPlaceName();
         this.details= schedules.getDetails();
     }
+
+    public void update(Days days, SchedulesRequestDto requestDto){
+        this.days = updateDays(days, requestDto);
+        this.schedulesCategory = requestDto.getSchedulesCategory();
+        this.startTime = requestDto.getStartTime();
+        this.endTime = requestDto.getEndTime();
+        this.costs = requestDto.getCosts();
+        this.contents = requestDto.getContents();
+        this.placeName = requestDto.getPlaceName();
+        this.details = requestDto.getDetails();
+    }
+
+    // Days 객체의 chosenDate를 업데이트하기 위한 메서드
+    public Days updateDays(Days days, SchedulesRequestDto requestDto){
+        Days daysToUpdate = new Days(requestDto.getChosenDate(), days.getPosts());
+        return daysToUpdate;
+    }
+
 }

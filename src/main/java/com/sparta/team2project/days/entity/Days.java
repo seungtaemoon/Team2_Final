@@ -16,6 +16,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class Days {
+    // 여행날짜 아이디
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

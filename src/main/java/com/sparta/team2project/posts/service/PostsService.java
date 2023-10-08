@@ -14,10 +14,14 @@ import com.sparta.team2project.postslike.entity.PostsLike;
 import com.sparta.team2project.postslike.repository.PostsLikeRepository;
 import com.sparta.team2project.schedules.entity.Schedules;
 import com.sparta.team2project.schedules.repository.SchedulesRepository;
+import com.sparta.team2project.users.UserRepository;
+import com.sparta.team2project.users.UserRoleEnum;
+import com.sparta.team2project.users.Users;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,20 +35,23 @@ public class PostsService {
     private final DaysRepository daysRepository;
     private final SchedulesRepository schedulesRepository;
     private final PostsLikeRepository postsLikeRepository;
-    //private final UsersRepository usersRepository;
-    public MessageResponseDto createPost(TotalRequestDto totalRequestDto) { //Users users 추가하기
-//        Users existUser = checkUser(users); // 유저 확인
+    private final UserRepository userRepository;
+    public MessageResponseDto createPost(TotalRequestDto totalRequestDto, Users users) {
+        //Users users 추가하기
+        Users existUser = checkUser(users); // 유저 확인
 //
 //        //권한 확인
-//        checkAuthority(existUser, users);
+        checkAuthority(existUser, users);
 
         Posts posts = new Posts(totalRequestDto.getLikeNum(),
-                                totalRequestDto.getContents(),
-                                totalRequestDto.getTitle(),
-                                totalRequestDto.getPostCategory(),
-                                totalRequestDto.getStartDate(),
-                                totalRequestDto.getEndDate());
-                                //existUser);
+                totalRequestDto.getContents(),
+                totalRequestDto.getTitle(),
+                totalRequestDto.getPostCategory(),
+                totalRequestDto.getStartDate(),
+                totalRequestDto.getEndDate(),
+                existUser
+        );
+        //existUser);
         postsRepository.save(posts);  //posts 저장
 
         List<DayRequestDto> dayRequestDtoList = totalRequestDto.getDayList();
@@ -73,12 +80,12 @@ public class PostsService {
     }
 
     public MessageResponseDto like(Long id, Users users){
-         Posts posts = checkPosts(id);
+        Posts posts = checkPosts(id);
 
-//        Users existUser = checkUser(users); // 유저 확인
+        Users existUser = checkUser(users); // 유저 확인
 //
 //        //권한 확인
-//        checkAuthority(existUser, users);
+        checkAuthority(existUser, users);
         PostsLike overlap = postsLikeRepository.findByPostsAndUsers(posts,existUser);
         if(overlap!=null){
             postsLikeRepository.delete(overlap); // 좋아요 삭제
@@ -93,16 +100,15 @@ public class PostsService {
         }
     }
 
-//    private Users checkUser (Users users) {
-//        return usersRepository.findByEmail(users.getEmail()).
-//                orElseThrow(() -> new CustomException(ErrorCode.ID_NOT_MATCH));
-//
-//    }
-//      private void checkAuthority(Users existUser,Users users){
-//          if (!existUser.getRole().equals(UserRoleEnum.ADMIN)&&!existUser.getEmail().equals(users.getEmail())) {
-//            throw new CustomException(ErrorCode.NOT_ALLOWED);
-//        }
-//      }
+        private Users checkUser (Users users) {
+        return userRepository.findByEmail(users.getEmail()).
+                orElseThrow(() -> new CustomException(ErrorCode.ID_NOT_MATCH));
+        }
+      private void checkAuthority(Users existUser,Users users){
+          if (!existUser.getUserRole().equals(UserRoleEnum.ADMIN)&&!existUser.getEmail().equals(users.getEmail())) {
+            throw new CustomException(ErrorCode.NOT_ALLOWED);
+        }
+      }
     private Posts checkPosts(Long id) {
         return postsRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_EXIST));
     }
