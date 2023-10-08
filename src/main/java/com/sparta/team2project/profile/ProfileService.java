@@ -21,9 +21,11 @@ public class ProfileService {
 
 
     // 프로필 조회하기
-    public ResponseEntity<ProfileResponseDto> getProfile(Long userId, Users users) {
+    public ResponseEntity<ProfileResponseDto> getProfile(Users users) {
+//        Users findUser = userRepository.findByEmail(users.getEmail())
+//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        Profile findProfile = profileRepository.findByUsers_Id(userId)
+        Profile findProfile = profileRepository.findByUsers_Email(users.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("마이페이지를 찾을 수 없습니다."));
 
         ProfileResponseDto responseDto = new ProfileResponseDto(findProfile);
@@ -33,9 +35,11 @@ public class ProfileService {
 
     // 프로필 수정하기(닉네임, 프로필이미지)
     @Transactional
-    public ResponseEntity<MessageResponseDto> updateProfile(Long userId, ProfileRequestDto requestDto, Users users) {
+    public ResponseEntity<MessageResponseDto> updateProfile(ProfileRequestDto requestDto, Users users) {
+//        Users findUser = userRepository.findByEmail(users.getEmail())
+//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         // 프로필 조회
-        Profile findProfile = profileRepository.findByUsers_Id(userId)
+        Profile findProfile = profileRepository.findByUsers_Email(users.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("프로필을 찾을 수 없습니다."));
 
         // 사용자와 프로필 이메일이 같은지 확인
@@ -53,9 +57,11 @@ public class ProfileService {
 
     //프로필 수정하기(비밀번호)
     @Transactional
-    public ResponseEntity<MessageResponseDto> updatePassword(Long userId, ProfileRequestDto requestDto, Users users) {
+    public ResponseEntity<MessageResponseDto> updatePassword(ProfileRequestDto requestDto, Users users) {
+        Users findUser = userRepository.findByEmail(users.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         // 프로필 조회
-        Profile findProfile = profileRepository.findByUsers_Id(userId)
+        Profile findProfile = profileRepository.findByUsers_Email(users.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("프로필을 찾을 수 없습니다."));
 
         // 사용자와 프로필 이메일이 같은지 확인
