@@ -5,6 +5,7 @@ import com.sparta.team2project.users.Users;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
 @Getter
@@ -37,8 +38,9 @@ public class Profile {
         this.profileImg = requestDto.getUpdateProfileImg();
     }
 
-    public void updatePassword(ProfileRequestDto requestDto) {
-        this.password = requestDto.getUpdatePassword();
+    public void updatePassword(ProfileRequestDto requestDto, PasswordEncoder passwordEncoder) {
+        // 비밀번호를 인코딩하여 저장
+        this.password = passwordEncoder.encode(requestDto.getUpdatePassword());
     }
 }
 

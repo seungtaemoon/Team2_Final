@@ -7,6 +7,7 @@ import com.sparta.team2project.users.UserRepository;
 import com.sparta.team2project.users.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +56,7 @@ public class ProfileService {
         return ResponseEntity.ok(responseDto);
     }
 
-    //프로필 수정하기(비밀번호)
+    // 비밀번호 수정하기
     @Transactional
     public ResponseEntity<MessageResponseDto> updatePassword(ProfileRequestDto requestDto, Users users) {
         Users findUser = userRepository.findByEmail(users.getEmail())
@@ -68,17 +69,18 @@ public class ProfileService {
         if (!findProfile.getUsers().getEmail().equals(users.getEmail())) {
             throw new IllegalArgumentException("마이페이지 수정 권한이 없습니다.");
         }
-
         // 현재 비밀번호 확인
         String currentPassword = requestDto.getCurrentPassword();
         if (!passwordEncoder.matches(currentPassword, findProfile.getPassword())) {
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
+
         // 새로운 비밀번호 업데이트
         String updatePassword = requestDto.getUpdatePassword();
+        // 비번 수정시 같은 비번으로 수정 안되게 추가 필요
 
-        findProfile.updatePassword(requestDto);
-
+        // 새로운 비밀번호 인코딩 후 저장
+        findProfile.updatePassword(requestDto, passwordEncoder);
         profileRepository.save(findProfile);
 
         MessageResponseDto responseDto = new MessageResponseDto("비밀번호 수정 성공", 200);
