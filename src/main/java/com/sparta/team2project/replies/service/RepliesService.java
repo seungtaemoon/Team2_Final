@@ -36,7 +36,6 @@ public class RepliesService {
 
         Replies replies = new Replies(requestDto);
         comments.addReplies(replies);
-        posts.addComments(comments);
 
         MessageResponseDto messageResponseDto = new MessageResponseDto(
                 "대댓글을 작성하였습니다", 200
@@ -47,7 +46,7 @@ public class RepliesService {
 
     // 대댓글 조회
     public List<RepliesResponseDto> repliesList(Long commentId) {
-        return repliesRepository.findByIdComments_IdOrderByCreatedAtDesc(commentId).stream().map(RepliesResponseDto::new).toList();
+        return repliesRepository.findByComments_IdOrderByCreatedAtDesc(commentId).stream().map(RepliesResponseDto::new).toList();
     }
 
     @Transactional
