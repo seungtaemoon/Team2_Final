@@ -65,7 +65,7 @@ public class SchedulesService {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users);         // 권한 확인
         Schedules schedules = findSchedules(schedulesId); // 해당 세부일정 찾기
-        schedules.update(schedules.getDays(), requestDto); //세부일정 업데이트
+        schedules.update(requestDto); //세부일정 업데이트
         return new SchedulesResponseDto(schedules); // ResponseDto에 실어서 반환
     }
 

@@ -1,7 +1,9 @@
 package com.sparta.team2project.replies.entity;
 
 import com.sparta.team2project.comments.entity.Comments;
-import com.sparta.team2project.commons.entity.Timestamped;
+
+import com.sparta.team2project.commons.timestamped.TimeStamped;
+import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.replies.dto.RepliesRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,14 +12,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-
 @Table(name = "replies")
-public class Replies extends Timestamped {
+public class Replies extends TimeStamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name ="replies_id")
-    private  Long id;
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String nickname;

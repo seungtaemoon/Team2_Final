@@ -39,8 +39,8 @@ public class PostsService {
     private final SchedulesRepository schedulesRepository;
     private final PostsLikeRepository postsLikeRepository;
     private final UserRepository usersRepository;
-    private final CommentsRepository commentsRepository;
-    private final RepliesRepository repliesRepository;
+//    private final CommentsRepository commentsRepository;
+//    private final RepliesRepository repliesRepository;
 
     // 게시글 생성
     public MessageResponseDto createPost(TotalRequestDto totalRequestDto,Users users) {
@@ -48,7 +48,7 @@ public class PostsService {
         Users existUser = checkUser(users); // 사용자 조회
 
         //권한 확인
-        checkAuthority(existUser,users); //(ROLE이 ADMIN이든 User든 userId(토큰만) 있으면 생성을 할 수 있으니 여기서는 제외)
+//        checkAuthority(existUser,users); //(ROLE이 ADMIN이든 User든 userId(토큰만) 있으면 생성을 할 수 있으니 여기서는 제외)
 
         Posts posts = new Posts(totalRequestDto.getContents(),
                                 totalRequestDto.getTitle(),
@@ -86,29 +86,29 @@ public class PostsService {
     }
 
     // 단일 게시물 조회
-    public PostResponseDto getPost(Long postId) {
-
-        Posts posts = checkPosts(postId); // 게시물 id 조회
-        List<Comments> commentsList = checkComments(posts); // 해당 게시글의 댓글 조회
-        List<PostDetailResponseDto>totalCommentRepliesDto = new ArrayList<>(); // response로 반환할 객체 리스트
-
-        for(Comments comments:commentsList){
-            List<ReplyResponseDto> repliesAboutList = new ArrayList<>(); // commentsID별 replies 객체에 대한 필드 담을 리스트
-
-            List<Replies> repliesList = repliesRepository.findAllByCommentsOrderByCreatedAtDesc(comments);// 해당 댓글 관련 replies 객체가 들어있는 리스트
-            for(Replies replies:repliesList){ // replies 객체 하니씩 빼옴
-                String contents = replies.getContents();
-                String nickName = replies.getNickname();
-
-                LocalDateTime create = replies.getCreatedAt();//(커밋전 삭제)
-                ReplyResponseDto replyResponseDto = new ReplyResponseDto(contents,nickName,create);//(커밋전 create 삭제)
-                repliesAboutList.add(replyResponseDto);
-            }
-            PostDetailResponseDto dto = new PostDetailResponseDto(comments.getContents(),repliesAboutList);
-            totalCommentRepliesDto.add(dto);
-        }
-        return new PostResponseDto(posts,posts.getUsers(),totalCommentRepliesDto);
-    }
+//    public PostResponseDto getPost(Long postId) {
+//
+//        List<Comments> commentsList = checkComments(posts); // 해당 게시글의 댓글 조회
+//        List<PostDetailResponseDto>totalCommentRepliesDto = new ArrayList<>(); // response로 반환할 객체 리스트
+//
+//        for(Comments comments:commentsList){
+//            List<ReplyResponseDto> repliesAboutList = new ArrayList<>(); // commentsID별 replies 객체에 대한 필드 담을 리스트
+//
+//            List<Replies> repliesList = repliesRepository.findAllByCommentsOrderByCreatedAtDesc(comments);// 해당 댓글 관련 replies 객체가 들어있는 리스트
+//            for(Replies replies:repliesList){ // replies 객체 하니씩 빼옴
+//                String contents = replies.getContents();
+//                String nickName = replies.getNickname();
+//
+//                LocalDateTime create = replies.getCreatedAt();//(커밋전 삭제)
+//        Posts posts = checkPosts(postId); // 게시물 id 조회
+//                ReplyResponseDto replyResponseDto = new ReplyResponseDto(contents,nickName,create);//(커밋전 create 삭제)
+//                repliesAboutList.add(replyResponseDto);
+//            }
+//            PostDetailResponseDto dto = new PostDetailResponseDto(comments.getContents(),repliesAboutList);
+//            totalCommentRepliesDto.add(dto);
+//        }
+//        return new PostResponseDto(posts,posts.getUsers(),totalCommentRepliesDto);
+//    }
 
     // 랭킹 목록 조회(상위 3개)
     public List<PostResponseDto> getRankPosts() {
@@ -128,7 +128,7 @@ public class PostsService {
 
         Users existUser = checkUser(users); // 사용자 조회
 
-        checkAuthority(existUser,users); //권한 확인 //(ROLE이 ADMIN이든 User든 userId(토큰만) 있으면 좋아요를 할 수 있으니 여기서는 제외)
+//        checkAuthority(existUser,users); //권한 확인 //(ROLE이 ADMIN이든 User든 userId(토큰만) 있으면 좋아요를 할 수 있으니 여기서는 제외)
         PostsLike overlap = postsLikeRepository.findByPostsAndUsers(posts,existUser);
         if(overlap!=null){
             postsLikeRepository.delete(overlap); // 좋아요 삭제
@@ -160,8 +160,8 @@ public class PostsService {
         checkAuthority(existUser,posts.getUsers()); //권한 확인(ROLE 확인 및 게시글 사용자 id와 토큰에서 가져온 사용자 id 일치 여부 확인)
 
         // 연관된 댓글 삭제(orphanRemoval기능:자동으로 대댓글 삭제)
-        List<Comments> commentsList = commentsRepository.findByPosts(posts);
-        commentsRepository.deleteAll(commentsList);
+//        List<Comments> commentsList = commentsRepository.findByPosts(posts);
+//        commentsRepository.deleteAll(commentsList);
 
         // 연관된 좋아요 테이블 삭제
         List<PostsLike> postsLikeList = postsLikeRepository.findByPosts(posts);
@@ -195,11 +195,11 @@ public class PostsService {
     }
 
     // 해당 게시물에 대한 댓글 조회 메서드
-    private List<Comments> checkComments(Posts posts) {
-        List<Comments> commentsList = commentsRepository.findByPostsOrderByCreatedAtDesc(posts);
-        if(commentsList.isEmpty()){
-            throw new CustomException(ErrorCode.COMMENTS_NOT_FOUND);
-        }
-        return commentsList;
-    }
+//    private List<Comments> checkComments(Posts posts) {
+//        List<Comments> commentsList = commentsRepository.findByPostsOrderByCreatedAtDesc(posts);
+//        if(commentsList.isEmpty()){
+//            throw new CustomException(ErrorCode.COMMENTS_NOT_FOUND);
+//        }
+//        return commentsList;
+//    }
 }

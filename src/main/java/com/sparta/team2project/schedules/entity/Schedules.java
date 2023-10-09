@@ -59,8 +59,8 @@ public class Schedules extends TimeStamped {
         this.details= schedules.getDetails();
     }
 
-    public void update(Days days, SchedulesRequestDto requestDto){
-        this.days = updateDays(days, requestDto);
+    public void update(SchedulesRequestDto requestDto){
+//        this.days = updateDays(days, requestDto);
         this.schedulesCategory = requestDto.getSchedulesCategory();
         this.startTime = requestDto.getStartTime();
         this.endTime = requestDto.getEndTime();
@@ -71,9 +71,9 @@ public class Schedules extends TimeStamped {
     }
 
     // Days 객체의 chosenDate를 업데이트하기 위한 메서드
-    public Days updateDays(Days days, SchedulesRequestDto requestDto){
-        Days daysToUpdate = new Days(requestDto.getChosenDate(), days.getPosts());
-        return daysToUpdate;
-    }
+//    public Days updateDays(Days days, SchedulesRequestDto requestDto){
+//        Days daysToUpdate = new Days(requestDto.getChosenDate(), days.getPosts());
+//        return daysToUpdate;
+//    }
 
 }

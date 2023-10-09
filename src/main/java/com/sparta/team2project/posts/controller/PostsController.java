@@ -30,8 +30,8 @@ public class PostsController {
         return ResponseEntity.ok(postsService.getAllPosts());
     }
 
-    @GetMapping("/posts/{postId}") // 단일 게시물 조회
-    public ResponseEntity<PostResponseDto> getPost(@PathVariable Long postId){return ResponseEntity.ok(postsService.getPost(postId));}
+//    @GetMapping("/posts/{postId}") // 단일 게시물 조회
+//    public ResponseEntity<PostResponseDto> getPost(@PathVariable Long postId){return ResponseEntity.ok(postsService.getPost(postId));}
 
     @GetMapping("/posts/rank") // 랭킹 목록 조회
     public ResponseEntity<List<PostResponseDto>> getRankPosts(){return ResponseEntity.ok(postsService.getRankPosts());}

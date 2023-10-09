@@ -5,16 +5,17 @@ import com.sparta.team2project.comments.dto.CommentsResponseDto;
 import com.sparta.team2project.comments.entity.Comments;
 import com.sparta.team2project.comments.repository.CommentsRepository;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
-import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.replies.dto.RepliesResponseDto;
 import com.sparta.team2project.replies.entity.Replies;
-import com.sparta.team2project.users.entity.Users;
+import com.sparta.team2project.users.UserRoleEnum;
+import com.sparta.team2project.users.Users;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class CommentsService {
                 () -> new CustomException(ErrorCode.POST_NOT_EXIST)); // 존재하지 않는 게시글입니다
 
         Comments comments = new Comments(requestDto);
-        posts.addComments(comments);
+//        posts.addComments(comments);
         MessageResponseDto messageResponseDto = new MessageResponseDto(
                 "댓글을 작성하였습니다", 200
         );
@@ -45,7 +46,7 @@ public class CommentsService {
 
     // 댓글 조회
     public List<CommentsResponseDto> commentsList(Long postId) {
-        List<Comments> commentsList = commentsRepository.findByPostIdOrderByCreatedAtDesc(postId);
+        List<Comments> commentsList = commentsRepository.findByIdOrderByCreatedAtDesc(postId);
 
         List<CommentsResponseDto> commentsResponseDtoList = new ArrayList<>();
 

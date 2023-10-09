@@ -12,7 +12,7 @@ import java.time.LocalTime;
 @Getter
 @RequiredArgsConstructor
 public class SchedulesResponseDto {
-    private LocalDate chosenDate; // 해당 스케줄에 대한 요일 반환
+//    private LocalDate chosenDate; // 해당 스케줄에 대한 요일 반환
     private SchedulesCategory schedulesCategory;
     private String details;
     private int costs;
@@ -24,7 +24,7 @@ public class SchedulesResponseDto {
     private LocalDateTime modifiedAt;
 
     public SchedulesResponseDto(Schedules schedules){
-        this.chosenDate = schedules.getDays().getChosenDate(); // 해당 스케줄에 대한 요일 반환
+//        this.chosenDate = schedules.getDays().getChosenDate(); // 해당 스케줄에 대한 요일 반환
         this.schedulesCategory = schedules.getSchedulesCategory();
         this.details = schedules.getDetails();
         this.costs = schedules.getCosts();

@@ -9,7 +9,7 @@ import java.time.LocalTime;
 
 @Getter
 public class SchedulesRequestDto {
-    private LocalDate chosenDate;
+//    private LocalDate chosenDate;
     private SchedulesCategory schedulesCategory;
     private String details;
     private int costs;

@@ -1,7 +1,8 @@
 package com.sparta.team2project.comments.entity;
 
 import com.sparta.team2project.comments.dto.CommentsRequestDto;
-import com.sparta.team2project.commons.entity.Timestamped;
+
+import com.sparta.team2project.commons.timestamped.TimeStamped;
 import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.replies.entity.Replies;
 import jakarta.persistence.*;
@@ -15,7 +16,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Table(name = "comments")
-public class Comments extends Timestamped {
+public class Comments extends TimeStamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
