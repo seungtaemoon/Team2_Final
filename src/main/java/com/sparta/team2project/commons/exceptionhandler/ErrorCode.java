@@ -22,7 +22,8 @@ public enum ErrorCode {
     S3_NOT_UPLOAD(HttpStatus.BAD_REQUEST,"S3에 업로드가 되지 않았습니다."),
     PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "잘못된 패스워드입니다."),
     EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "등록되지 않은 이메일입니다."),
-    COMMENTS_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 댓글은 존재하지 않습니다.");
+    COMMENTS_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 댓글은 존재하지 않습니다."),
+    DATE_NOT_VALID(HttpStatus.BAD_REQUEST, "유효한 범위의 날짜가 아닙니다.");
 
 
     private final HttpStatus statusCode;
