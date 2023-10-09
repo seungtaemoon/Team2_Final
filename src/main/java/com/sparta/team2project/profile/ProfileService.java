@@ -58,7 +58,7 @@ public class ProfileService {
 
         // 현재 비밀번호 확인
         String currentPassword = requestDto.getCurrentPassword();
-        if (!passwordEncoder.matches(currentPassword, findProfile.getPassword())) {
+        if (!passwordEncoder.matches(currentPassword, findProfile.getUsers().getPassword())) {
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
         // 수정할 비밀번호가 현재 비밀번호와 같은 경우

@@ -19,13 +19,16 @@ public class Profile {
     @JoinColumn(name = "users_id")
     private Users users;
 
+    private String email;
     private String nickName;
     private String profileImg;
-    private String password;
 
 
     public Profile(Users users) {
         this.users = users;
+        this.email = users.getEmail();
+        this.nickName = users.getNickName();
+        this.profileImg = users.getProfileImg();
     }
 }
 
