@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface PostsRepository extends JpaRepository<Posts, Long> {
     List<Posts> findAllByOrderByCreatedAtDesc();
+
+    List<Posts> findFirst3ByOrderByLikeNumDescCreatedAtDesc();
 }
