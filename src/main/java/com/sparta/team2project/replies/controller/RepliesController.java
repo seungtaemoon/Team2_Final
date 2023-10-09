@@ -19,37 +19,33 @@ public class RepliesController {
     private final RepliesService repliesService;
 
     // 대댓글 생성
-    @PostMapping("/post/{postId}/comments/{commentId}/replies")
-    public ResponseEntity<RepliesResponseDto> repliesCreate(@PathVariable("postId") Long postId,
-                                                            @PathVariable("commentId") Long commentId,
+    @PostMapping("comments/{commentId}/replies")
+    public ResponseEntity<RepliesResponseDto> repliesCreate(@PathVariable("commentId") Long commentId,
                                                             @RequestBody RepliesRequestDto requestDto,
                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(repliesService.repliesCreate(postId, commentId, requestDto, userDetails.getUsers()));
+        return ResponseEntity.ok(repliesService.repliesCreate(commentId, requestDto, userDetails.getUsers()));
     }
 
     // 대댓글 조회
-    @GetMapping("/posts/{postId}/comments/{commentId}/replies")
-    public ResponseEntity<List<RepliesResponseDto>> repliesList(@PathVariable("postId") Long postId,
-                                                                 @PathVariable("commentId") Long commentId) {
-        return ResponseEntity.ok(repliesService.repliesList(postId, commentId));
+    @GetMapping("/comments/{commentId}/replies")
+    public ResponseEntity<List<RepliesResponseDto>> repliesList(@PathVariable("commentId") Long commentId) {
+        return ResponseEntity.ok(repliesService.repliesList(commentId));
     }
 
     // 대댓글 수정
-    @PutMapping("/post/{postId}/comments/{commentId}/replies/{repliesId}")
-    public ResponseEntity<RepliesResponseDto> repliesUpdate(@PathVariable("postId") Long postId,
-                                                             @PathVariable("commentId") Long commentId,
+    @PutMapping("comments/{commentId}/replies/{repliesId}")
+    public ResponseEntity<RepliesResponseDto> repliesUpdate( @PathVariable("commentId") Long commentId,
                                                              @PathVariable("repliesId") Long repliesId,
                                                              @RequestBody RepliesRequestDto request,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(repliesService.repliesUpdate(postId, commentId, repliesId, request, userDetails.getUsers()));
+        return ResponseEntity.ok(repliesService.repliesUpdate(commentId, repliesId, request, userDetails.getUsers()));
     }
 
     // 대댓글 삭제
-    @DeleteMapping("/post/{postId}/comments/{commentId}/replies/{repliesId}")
-    public ResponseEntity<MessageResponseDto> repliesDelete(@PathVariable("postId") Long postId,
-                                                            @PathVariable("commentId") Long commentId,
+    @DeleteMapping("comments/{commentId}/replies/{repliesId}")
+    public ResponseEntity<MessageResponseDto> repliesDelete(@PathVariable("commentId") Long commentId,
                                                             @PathVariable("repliesId") Long repliesId,
                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(repliesService.repliesDelete(postId, commentId, repliesId, userDetails.getUsers()));
+        return ResponseEntity.ok(repliesService.repliesDelete(commentId, repliesId, userDetails.getUsers()));
     }
 }

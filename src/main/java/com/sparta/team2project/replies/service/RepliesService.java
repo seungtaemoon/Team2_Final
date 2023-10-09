@@ -28,14 +28,9 @@ public class RepliesService {
 
 
     // 대댓글 생성
-    public RepliesResponseDto repliesCreate(Long postId,
-                                            Long commentId,
+    public RepliesResponseDto repliesCreate(Long commentId,
                                             RepliesRequestDto requestDto,
                                             Users users) {
-
-        Posts posts = postsRepository.findById(postId).orElseThrow(
-                () -> new CustomException(ErrorCode.POST_NOT_EXIST)); // 존재하지 않는 게시글입니다
-
         Comments comments = commentsRepository.findById(commentId).orElseThrow(
                 () -> new CustomException(ErrorCode.POST_NOT_EXIST)); // 존재하지 않는 게시글입니다
 
@@ -51,20 +46,16 @@ public class RepliesService {
     }
 
     // 대댓글 조회
-    public List<RepliesResponseDto> repliesList(Long postId,
-                                                 Long commentId) {
-        return repliesRepository.findByPosts_IdAndComments_IdOrderByCreatedAtDesc(commentId, postId).stream().map(RepliesResponseDto::new).toList();
+    public List<RepliesResponseDto> repliesList(Long commentId) {
+        return repliesRepository.findByIdComments_IdOrderByCreatedAtDesc(commentId).stream().map(RepliesResponseDto::new).toList();
     }
 
     @Transactional
     // 대댓글 수정
-    public RepliesResponseDto repliesUpdate(Long postId,
-                                             Long commentId,
+    public RepliesResponseDto repliesUpdate( Long commentId,
                                              Long repliesId,
                                              RepliesRequestDto request,
                                              Users users) {
-        Posts posts = postsRepository.findById(postId).orElseThrow(
-                () -> new CustomException(ErrorCode.POST_NOT_EXIST)); // 존재하지 않는 게시글입니다
 
         Comments comments = commentsRepository.findById(commentId).orElseThrow(
                 () -> new CustomException(ErrorCode.POST_NOT_EXIST)); // 존재하지 않는 게시글입니다
@@ -90,12 +81,9 @@ public class RepliesService {
     }
 
     // 대댓글 삭제
-    public MessageResponseDto repliesDelete(Long postId,
-                                            Long commentId,
+    public MessageResponseDto repliesDelete(Long commentId,
                                             Long repliesId,
                                             Users users) {
-        Posts posts = postsRepository.findById(postId).orElseThrow(
-                () -> new CustomException(ErrorCode.POST_NOT_EXIST)); // 존재하지 않는 게시글입니다
 
         Comments comments = commentsRepository.findById(commentId).orElseThrow(
                 () -> new CustomException(ErrorCode.POST_NOT_EXIST)); // 존재하지 않는 게시글입니다

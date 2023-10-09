@@ -3,6 +3,7 @@ package com.sparta.team2project.replies.entity;
 import com.sparta.team2project.comments.entity.Comments;
 
 import com.sparta.team2project.commons.timestamped.TimeStamped;
+import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.replies.dto.RepliesRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
