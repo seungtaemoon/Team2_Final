@@ -2,6 +2,7 @@ package com.sparta.team2project.profile.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sparta.team2project.profile.Profile;
+import com.sparta.team2project.users.Users;
 import lombok.Getter;
 
 @Getter
@@ -12,10 +13,10 @@ public class ProfileResponseDto {
     private String nickName;
     private String profileImg;
 
-    public ProfileResponseDto(Profile profile) {
-        this.email = profile.getUsers().getEmail();
-        this.password = profile.getUsers().getPassword();
-        this.nickName = profile.getUsers().getNickName();
-        this.profileImg = profile.getUsers().getProfileImg();
+    public ProfileResponseDto(Users users) {
+        this.email = users.getEmail();
+        this.password = users.getPassword();
+        this.nickName = users.getNickName();
+        this.profileImg = users.getProfileImg();
     }
 }

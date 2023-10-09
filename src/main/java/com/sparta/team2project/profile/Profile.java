@@ -15,20 +15,14 @@ public class Profile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "users_id")
     private Users users;
 
-    private String email;
-    private String nickName;
-    private String profileImg;
 
-
-    public Profile(Users users) {
+        public Profile(Users users) {
         this.users = users;
-        this.email = users.getEmail();
-        this.nickName = users.getNickName();
-        this.profileImg = users.getProfileImg();
+
     }
 }
 

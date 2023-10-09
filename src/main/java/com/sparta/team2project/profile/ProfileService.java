@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ProfileRepository profileRepository;
@@ -26,9 +25,8 @@ public class ProfileService {
     public ResponseEntity<ProfileResponseDto> getProfile(Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users); //권한 확인
-        Profile findProfile = checkProfile(users); // 마이페이지 확인
 
-        ProfileResponseDto responseDto = new ProfileResponseDto(findProfile);
+        ProfileResponseDto responseDto = new ProfileResponseDto(checkUser(users));
 
         return ResponseEntity.ok(responseDto);
     }
@@ -38,7 +36,7 @@ public class ProfileService {
     public ResponseEntity<MessageResponseDto> updateProfile(ProfileRequestDto requestDto, Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users); //권한 확인
-        Profile findProfile = checkProfile(users); // 마이페이지 유무확인
+        Profile findProfile = checkProfile(users); // 마이페이지 찾기
 
 
         //닉네임, 프로필이미지 업데이트
@@ -54,7 +52,7 @@ public class ProfileService {
     public ResponseEntity<MessageResponseDto> updatePassword(ProfileRequestDto requestDto, Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users); //권한 확인
-        Profile findProfile = checkProfile(users); // 마이페이지 확인
+        Profile findProfile = checkProfile(users); // 마이페이지 찾기
 
         // 현재 비밀번호 확인
         String currentPassword = requestDto.getCurrentPassword();
@@ -91,7 +89,7 @@ public class ProfileService {
         }
     }
 
-    // 마이페이지 확인
+    // 마이페이지 찾기
     private Profile checkProfile(Users users) {
         return profileRepository.findByUsers_Email(users.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.PROFILE_NOT_EXIST));
