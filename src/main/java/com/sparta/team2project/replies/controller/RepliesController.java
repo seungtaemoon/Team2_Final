@@ -2,7 +2,6 @@ package com.sparta.team2project.replies.controller;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
-import com.sparta.team2project.posts.dto.PostsRequestDto;
 import com.sparta.team2project.replies.dto.RepliesRequestDto;
 import com.sparta.team2project.replies.dto.RepliesResponseDto;
 import com.sparta.team2project.replies.service.RepliesService;
@@ -29,7 +28,7 @@ public class RepliesController {
     }
 
     // 대댓글 조회
-    @GetMapping("/post/{postId}/comments/{commentId}/replies")
+    @GetMapping("/posts/{postId}/comments/{commentId}/replies")
     public ResponseEntity<List<RepliesResponseDto>> repliesList(@PathVariable("postId") Long postId,
                                                                  @PathVariable("commentId") Long commentId) {
         return ResponseEntity.ok(repliesService.repliesList(postId, commentId));
@@ -41,9 +40,8 @@ public class RepliesController {
                                                              @PathVariable("commentId") Long commentId,
                                                              @PathVariable("repliesId") Long repliesId,
                                                              @RequestBody RepliesRequestDto request,
-                                                             @RequestBody PostsRequestDto requestDto,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(repliesService.repliesUpdate(postId, commentId, repliesId, request, requestDto, userDetails.getUsers()));
+        return ResponseEntity.ok(repliesService.repliesUpdate(postId, commentId, repliesId, request, userDetails.getUsers()));
     }
 
     // 대댓글 삭제

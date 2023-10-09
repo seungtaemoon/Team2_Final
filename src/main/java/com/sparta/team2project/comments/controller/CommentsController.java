@@ -19,7 +19,7 @@ public class CommentsController {
     private final CommentsService commentsService;
 
     // 댓글 생성
-    @PostMapping("/post/{postId}/comments")
+    @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<CommentsResponseDto> commentsCreate(@PathVariable("postId") Long postId,
                                                               @RequestBody CommentsRequestDto requestDto,
                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -27,13 +27,13 @@ public class CommentsController {
     }
 
     // 댓글 조회
-    @GetMapping("/post/{postId}/comments")
+    @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<List<CommentsResponseDto>> commentsList(@PathVariable("postId") Long postId) {
         return ResponseEntity.ok(commentsService.commentsList(postId));
     }
 
     // 댓글 수정
-    @PutMapping("/post/{postId}/comments/{commentId}")
+    @PutMapping("/posts/{postId}/comments/{commentId}")
     public ResponseEntity<CommentsResponseDto> commentsUpdate(@PathVariable("postId") Long postId,
                                                               @PathVariable("commentId") Long commentId,
                                                               @RequestBody CommentsRequestDto request,
@@ -42,7 +42,7 @@ public class CommentsController {
     }
 
     // 댓글 삭제
-    @DeleteMapping("/post/{postId}/comments/{commentId}")
+    @DeleteMapping("/posts/{postId}/comments/{commentId}")
     public ResponseEntity<MessageResponseDto> commentsDelete(@PathVariable("postId") Long postId,
                                                              @PathVariable("commentId") Long commentId,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
