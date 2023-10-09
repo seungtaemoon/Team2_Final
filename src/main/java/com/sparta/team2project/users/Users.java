@@ -26,14 +26,10 @@ public class Users {
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
-    private UserRoleEnum userRole; // 기본값 설정
+    private UserRoleEnum userRole;
 
     @Column(nullable = false)
     private String profileImg;
-
-// 연관관계
-//    @OneToMany(mappedBy = "users")
-//    private Posts posts;
 
     // 회원 가입
     public Users(String email, String nickName, String password, UserRoleEnum userRole, String profileImg) {
