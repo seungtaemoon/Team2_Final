@@ -1,8 +1,7 @@
 package com.sparta.team2project.posts.entity;
 
-import com.sparta.team2project.comments.entity.Comments;
 import com.sparta.team2project.commons.timestamped.TimeStamped;
-import com.sparta.team2project.replies.entity.Replies;
+import com.sparta.team2project.posts.dto.UpdateRequestDto;
 import com.sparta.team2project.users.Users;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -46,10 +45,6 @@ public class Posts extends TimeStamped {
     @JoinColumn(name = "users_id",nullable = false)
     private Users users;
 
-    @OneToMany(mappedBy = "posts", orphanRemoval = true)
-    @OrderBy("createdAt asc")
-    private List<Comments> commentsList= new ArrayList<>();
-
 
     public Posts(String contents, String title, PostCategory postCategory, LocalDate startDate, LocalDate endDate,Users users) {
         this.contents = contents;
@@ -68,8 +63,11 @@ public class Posts extends TimeStamped {
         this.likeNum+=1;
     }
 
-    public void addComments(Comments newComments) {
-        this.commentsList.add(newComments);
-        newComments.setPosts(this);
+    public void update(UpdateRequestDto updateRequestDto) {
+        this.postCategory = updateRequestDto.getPostCategory();
+        this.title =  updateRequestDto.getTitle();
+        this.contents = updateRequestDto.getContents();
+        this.startDate = updateRequestDto.getStartDate();
+        this.endDate = updateRequestDto.getEndDate();
     }
 }
