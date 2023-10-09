@@ -20,7 +20,7 @@ public class RepliesController {
 
     // 대댓글 생성
     @PostMapping("comments/{commentId}/replies")
-    public ResponseEntity<RepliesResponseDto> repliesCreate(@PathVariable("commentId") Long commentId,
+    public ResponseEntity<MessageResponseDto> repliesCreate(@PathVariable("commentId") Long commentId,
                                                             @RequestBody RepliesRequestDto requestDto,
                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(repliesService.repliesCreate(commentId, requestDto, userDetails.getUsers()));
@@ -33,19 +33,17 @@ public class RepliesController {
     }
 
     // 대댓글 수정
-    @PutMapping("comments/{commentId}/replies/{repliesId}")
-    public ResponseEntity<RepliesResponseDto> repliesUpdate( @PathVariable("commentId") Long commentId,
-                                                             @PathVariable("repliesId") Long repliesId,
+    @PutMapping("replies/{repliesId}")
+    public ResponseEntity<MessageResponseDto> repliesUpdate( @PathVariable("repliesId") Long repliesId,
                                                              @RequestBody RepliesRequestDto request,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(repliesService.repliesUpdate(commentId, repliesId, request, userDetails.getUsers()));
+        return ResponseEntity.ok(repliesService.repliesUpdate(repliesId, request, userDetails.getUsers()));
     }
 
     // 대댓글 삭제
-    @DeleteMapping("comments/{commentId}/replies/{repliesId}")
-    public ResponseEntity<MessageResponseDto> repliesDelete(@PathVariable("commentId") Long commentId,
-                                                            @PathVariable("repliesId") Long repliesId,
+    @DeleteMapping("replies/{repliesId}")
+    public ResponseEntity<MessageResponseDto> repliesDelete(@PathVariable("repliesId") Long repliesId,
                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(repliesService.repliesDelete(commentId, repliesId, userDetails.getUsers()));
+        return ResponseEntity.ok(repliesService.repliesDelete(repliesId, userDetails.getUsers()));
     }
 }

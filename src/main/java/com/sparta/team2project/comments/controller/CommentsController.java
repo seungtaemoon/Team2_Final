@@ -5,6 +5,7 @@ import com.sparta.team2project.comments.dto.CommentsResponseDto;
 import com.sparta.team2project.comments.service.CommentsService;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
+import com.sparta.team2project.users.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,7 +21,7 @@ public class CommentsController {
 
     // 댓글 생성
     @PostMapping("/posts/{postId}/comments")
-    public ResponseEntity<CommentsResponseDto> commentsCreate(@PathVariable("postId") Long postId,
+    public ResponseEntity<MessageResponseDto> commentsCreate(@PathVariable("postId") Long postId,
                                                               @RequestBody CommentsRequestDto requestDto,
                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(commentsService.commentsCreate(postId, requestDto, userDetails.getUsers()));
@@ -33,19 +34,17 @@ public class CommentsController {
     }
 
     // 댓글 수정
-    @PutMapping("/posts/{postId}/comments/{commentId}")
-    public ResponseEntity<CommentsResponseDto> commentsUpdate(@PathVariable("postId") Long postId,
-                                                              @PathVariable("commentId") Long commentId,
+    @PutMapping("/comments/{commentId}")
+    public ResponseEntity<MessageResponseDto> commentsUpdate( @PathVariable("commentId") Long commentId,
                                                               @RequestBody CommentsRequestDto request,
                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
-       return ResponseEntity.ok(commentsService.commentsUpdate(postId, commentId, request, userDetails.getUsers()));
+       return ResponseEntity.ok(commentsService.commentsUpdate( commentId, request, userDetails.getUsers()));
     }
 
     // 댓글 삭제
-    @DeleteMapping("/posts/{postId}/comments/{commentId}")
-    public ResponseEntity<MessageResponseDto> commentsDelete(@PathVariable("postId") Long postId,
-                                                             @PathVariable("commentId") Long commentId,
+    @DeleteMapping("/comments/{commentId}")
+    public ResponseEntity<MessageResponseDto> commentsDelete(@PathVariable("commentId") Long commentId,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(commentsService.commentsDelete(postId, commentId, userDetails.getUsers()));
+        return ResponseEntity.ok(commentsService.commentsDelete(commentId, userDetails.getUsers()));
     }
 }

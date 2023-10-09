@@ -5,6 +5,7 @@ import com.sparta.team2project.comments.dto.CommentsRequestDto;
 import com.sparta.team2project.commons.timestamped.TimeStamped;
 import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.replies.entity.Replies;
+import com.sparta.team2project.users.Users;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +24,6 @@ public class Comments extends TimeStamped {
     @Column(name ="comments_id")
     private  Long id;
 
-    @Column(nullable = false, unique = true)
     private String nickname;
 
     @Column(nullable = false, length = 500)
@@ -38,22 +38,14 @@ public class Comments extends TimeStamped {
     private List<Replies> repliesList= new ArrayList<>();
 
 
-    public Comments(CommentsRequestDto requestDto) {
-        this.nickname = requestDto.getNickname();
+    public Comments(CommentsRequestDto requestDto, Users users, Posts posts) {
+        this.nickname = users.getNickName();
         this.contents = requestDto.getContents();
-    }
-
-    public void update(CommentsRequestDto requestDto) {
-        this.nickname = requestDto.getNickname();
-        this.contents = requestDto.getContents();
-    }
-
-    public void addReplies(Replies newReplies) {
-        this.repliesList.add(newReplies);
-        newReplies.setComments(this);
-    }
-
-    public void setPosts(Posts posts) {
         this.posts = posts;
+    }
+
+    public void update(CommentsRequestDto requestDto, Users users) {
+        this.nickname = users.getNickName();
+        this.contents = requestDto.getContents();
     }
 }

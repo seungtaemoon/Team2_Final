@@ -47,10 +47,6 @@ public class Posts extends TimeStamped {
     @JoinColumn(name = "users_id",nullable = false)
     private Users users;
 
-    @OneToMany (mappedBy = "posts", orphanRemoval = true)
-    @OrderBy("createdAt asc")
-    private List<Comments> commentsList= new ArrayList<>();
-
 
     public Posts(String contents, String title, PostCategory postCategory, LocalDate startDate, LocalDate endDate,Users users) {
         this.contents = contents;
@@ -75,10 +71,5 @@ public class Posts extends TimeStamped {
         this.contents = updateRequestDto.getContents();
         this.startDate = updateRequestDto.getStartDate();
         this.endDate = updateRequestDto.getEndDate();
-    }
-
-    public void addComments(Comments newComments) {
-        this.commentsList.add(newComments);
-        newComments.setPosts(this);
     }
 }

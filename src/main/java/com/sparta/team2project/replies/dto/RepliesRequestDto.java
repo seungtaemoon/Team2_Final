@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class RepliesRequestDto {
-    private String nickname;
     private String contents;
 }
 
