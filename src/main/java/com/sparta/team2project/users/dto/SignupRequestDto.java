@@ -18,6 +18,7 @@ public class SignupRequestDto {
 
 
     @NotBlank
+    @Pattern(regexp = "^[A-Za-z0-9가-힣]{2,10}$", message = "닉네임은 2글자 이상, 10글자 이하의 영문자, 숫자, 또는 한글로만 구성되어야 합니다.")
     private String nickName; // 추가된 부분
 
     @NotBlank
