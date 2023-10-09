@@ -1,6 +1,7 @@
 package com.sparta.team2project.posts.entity;
 
 import com.sparta.team2project.commons.timestamped.TimeStamped;
+import com.sparta.team2project.posts.dto.UpdateRequestDto;
 import com.sparta.team2project.users.Users;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -60,5 +61,13 @@ public class Posts extends TimeStamped {
 
     public void like() {
         this.likeNum+=1;
+    }
+
+    public void update(UpdateRequestDto updateRequestDto) {
+        this.postCategory = updateRequestDto.getPostCategory();
+        this.title =  updateRequestDto.getTitle();
+        this.contents = updateRequestDto.getContents();
+        this.startDate = updateRequestDto.getStartDate();
+        this.endDate = updateRequestDto.getEndDate();
     }
 }
