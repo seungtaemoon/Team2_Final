@@ -21,7 +21,7 @@ public class DayResponseDto {
 
     public DayResponseDto(Days days){
         this.chosenDate = days.getChosenDate();
-        this.schedulesList = schedulesToDto(days.getScheduleList());
+        this.schedulesList = schedulesToDto(days.getSchedulesList());
     }
 
     public List<SchedulesResponseDto> schedulesToDto(List<Schedules> schedulesListBeforeDto){

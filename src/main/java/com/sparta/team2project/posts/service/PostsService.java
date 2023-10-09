@@ -64,7 +64,7 @@ public class PostsService {
             daysRepository.save(days); // days 저장
 
             List<Schedules>schedulesList=new ArrayList<>();
-            for(Schedules schedules:dayRequestDto.getScheduleList()) {
+            for(Schedules schedules:dayRequestDto.getSchedulesList()) {
                 schedules = new Schedules(days,schedules);
                 schedulesList.add(schedules);
             }

@@ -1,6 +1,7 @@
 package com.sparta.team2project.days.entity;
 
 import com.sparta.team2project.posts.dto.DayRequestDto;
+import com.sparta.team2project.posts.dto.DayResponseDto;
 import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.schedules.entity.Schedules;
 import jakarta.persistence.*;
@@ -31,12 +32,21 @@ public class Days {
     private Posts posts;
 
     @OneToMany(mappedBy = "days", cascade = {CascadeType.REMOVE})
-    private List<Schedules> scheduleList = new ArrayList<>();
+    private List<Schedules> schedulesList = new ArrayList<>();
 
     public Days(DayRequestDto dayRequestDto, Posts posts) {
         this.chosenDate = dayRequestDto.getChosenDate();
         this.posts = posts;
-        this.scheduleList = dayRequestDto.getScheduleList();
+        this.schedulesList = dayRequestDto.getSchedulesList();
 
+    }
+
+    public void updateChosenDate(DayRequestDto dayRequestDto) {
+        this.chosenDate = dayRequestDto.getChosenDate();
+    }
+
+    public void updateDays(DayRequestDto dayRequestDto){
+        this.chosenDate = dayRequestDto.getChosenDate();
+        this.schedulesList = dayRequestDto.getSchedulesList();
     }
 }

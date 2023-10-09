@@ -8,7 +8,6 @@ import java.util.List;
 
 @Getter
 public class DayRequestDto {
-
     private LocalDate chosenDate;
-    private List<Schedules> scheduleList;
+    private List<Schedules> schedulesList;
 }
