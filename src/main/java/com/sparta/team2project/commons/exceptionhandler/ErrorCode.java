@@ -15,6 +15,7 @@ public enum ErrorCode {
     EMAIL_FORMAT_WRONG(HttpStatus.BAD_REQUEST, "잘못된 형식의 이메일입니다."),     // 이메일, 비번 등에 공통으로 사용
     PASSWORD_FORMAT_WRONG(HttpStatus.BAD_REQUEST, "잘못된 형식의 패스워드 입니다."),
     POST_NOT_EXIST(HttpStatus.BAD_REQUEST, "존재하지 않는 게시글입니다."),
+    PROFILE_NOT_EXIST(HttpStatus.BAD_REQUEST, "존재하지 않는 마이페이지입니다."),
     NOT_ALLOWED(HttpStatus.BAD_REQUEST, "권한이 없습니다."), // 로그인 안한 상태에서, 혹은 권한이 없는 작성/수정/삭제 접근 시
     DUPLICATED_NICKNAME(HttpStatus.BAD_REQUEST, "중복된 닉네임입니다."),
     PLAN_NOT_FOUND(HttpStatus.BAD_REQUEST, "없는 여행일정입니다."),

@@ -38,19 +38,16 @@ public class UserService {
         if (checkUserId.isPresent()) {
             throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
         }
-
         // 사용자 ROLE 확인
         UserRoleEnum userRole = UserRoleEnum.USER;
 
         if (requestDto.getAdminToken() != null && ADMIN_TOKEN.equals(requestDto.getAdminToken())) {
             userRole = UserRoleEnum.ADMIN; // adminToken이 제공되면 ADMIN으로 설정
-
         }
 
         // 기본값 설정
         String nickName = "익명";
         String profileImg = "https://blog.kakaocdn.net/dn/ckw6CM/btsxrWYLmoZ/IW4PRNSDLAWNZEKkZO0qM1/img.png";
-
         // 입력값이 존재한다면 기본값 대체
         if (requestDto.getNickName() != null) {
             nickName = requestDto.getNickName();
@@ -63,12 +60,11 @@ public class UserService {
         Users users = new Users(email, nickName, password, userRole, profileImg);
         userRepository.save(users);
         // 프로필 생성
-        Profile profile = new Profile(users, users.getPassword(), users.getNickName(), users.getProfileImg());
+        Profile profile = new Profile(users);
         profileRepository.save(profile);
 
         return ResponseEntity.ok(new MessageResponseDto("회원가입 완료", HttpStatus.CREATED.value()));
     }
-
 
 
     // 회원탈퇴
@@ -81,6 +77,5 @@ public class UserService {
         }
         userRepository.delete(users);
         return ResponseEntity.ok(new MessageResponseDto("회원탈퇴 완료", HttpStatus.OK.value()));
-
     }
 }

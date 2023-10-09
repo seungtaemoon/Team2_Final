@@ -1,8 +1,10 @@
 package com.sparta.team2project.users;
 
+import com.sparta.team2project.profile.dto.ProfileRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
 @Getter
@@ -13,7 +15,6 @@ public class Users {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -22,7 +23,6 @@ public class Users {
 
     @Column(nullable = false)
     private String nickName;
-//    private String nickName = "익명"; // 기본값 설정
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
@@ -30,7 +30,6 @@ public class Users {
 
     @Column(nullable = false)
     private String profileImg;
-//    private String profileImg = "https://blog.kakaocdn.net/dn/bEuUJE/btsxkC03HfA/KfYkjsCIVSMk3rxSnUiO9K/img.png"; // 기본값 설정
 
 // 연관관계
 //    @OneToMany(mappedBy = "users")
@@ -45,21 +44,24 @@ public class Users {
         this.profileImg = profileImg;
     }
 
-    public Users(String email, String nickName, String password, String profileImg) {
-        this.email = email;
+    // 생성자 추가: 프로필 정보만 갖는 경우
+    public Users(String nickName, String profileImg) {
         this.nickName = nickName;
-        this.password = password;
         this.profileImg = profileImg;
     }
 
-//    // 회원 정보 수정
-//    public void updateProfile(String newNickName, String newProfileImg) {
-//        // 새로운 닉네임이 제공된 경우에만 업데이트
-//        if (newNickName != null) {
-//            this.nickName = newNickName;
-//        }
-//        if (newProfileImg != null) {
-//            this.profileImg = newProfileImg;
-//        }
-//    }
+    // 프로필 정보 업데이트 메서드
+    public void updateProfile(ProfileRequestDto requestDto) {
+        if (requestDto.getUpdateNickName() != null) {
+            this.nickName = requestDto.getUpdateNickName();
+        }
+        if (requestDto.getUpdateProfileImg() != null) {
+            this.profileImg = requestDto.getUpdateProfileImg();
+        }
+    }
+
+    public void updatePassword(ProfileRequestDto requestDto, PasswordEncoder passwordEncoder) {
+        // 비밀번호를 인코딩하여 저장
+        this.password = passwordEncoder.encode(requestDto.getUpdatePassword());
+    }
 }

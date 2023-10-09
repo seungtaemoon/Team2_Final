@@ -1,13 +1,15 @@
 package com.sparta.team2project.profile;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
+import com.sparta.team2project.commons.exceptionhandler.CustomException;
+import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.profile.dto.ProfileRequestDto;
 import com.sparta.team2project.profile.dto.ProfileResponseDto;
 import com.sparta.team2project.users.UserRepository;
+import com.sparta.team2project.users.UserRoleEnum;
 import com.sparta.team2project.users.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,70 +22,79 @@ public class ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final ProfileRepository profileRepository;
 
-
-    // 프로필 조회하기
+    // 마이페이지 조회하기
     public ResponseEntity<ProfileResponseDto> getProfile(Users users) {
-//        Users findUser = userRepository.findByEmail(users.getEmail())
-//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-        Profile findProfile = profileRepository.findByUsers_Email(users.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("마이페이지를 찾을 수 없습니다."));
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users); //권한 확인
+        Profile findProfile = checkProfile(users); // 마이페이지 확인
 
         ProfileResponseDto responseDto = new ProfileResponseDto(findProfile);
 
         return ResponseEntity.ok(responseDto);
     }
 
-    // 프로필 수정하기(닉네임, 프로필이미지)
+    // 마이페이지 수정하기(닉네임, 프로필이미지)
     @Transactional
     public ResponseEntity<MessageResponseDto> updateProfile(ProfileRequestDto requestDto, Users users) {
-//        Users findUser = userRepository.findByEmail(users.getEmail())
-//                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        // 프로필 조회
-        Profile findProfile = profileRepository.findByUsers_Email(users.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("프로필을 찾을 수 없습니다."));
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users); //권한 확인
+        Profile findProfile = checkProfile(users); // 마이페이지 유무확인
 
-        // 사용자와 프로필 이메일이 같은지 확인
-        if (!findProfile.getUsers().getEmail().equals(users.getEmail())) {
-            throw new IllegalArgumentException("마이페이지 수정 권한이 없습니다.");
-        }
 
         //닉네임, 프로필이미지 업데이트
-        findProfile.updateProfile(requestDto);
+        findProfile.getUsers().updateProfile(requestDto);
         profileRepository.save(findProfile);
 
-        MessageResponseDto responseDto = new MessageResponseDto("프로필 수정 성공", 200);
+        MessageResponseDto responseDto = new MessageResponseDto("마이페이지 수정 성공", 200);
         return ResponseEntity.ok(responseDto);
     }
 
     // 비밀번호 수정하기
     @Transactional
     public ResponseEntity<MessageResponseDto> updatePassword(ProfileRequestDto requestDto, Users users) {
-        Users findUser = userRepository.findByEmail(users.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        // 프로필 조회
-        Profile findProfile = profileRepository.findByUsers_Email(users.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("프로필을 찾을 수 없습니다."));
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users); //권한 확인
+        Profile findProfile = checkProfile(users); // 마이페이지 확인
 
-        // 사용자와 프로필 이메일이 같은지 확인
-        if (!findProfile.getUsers().getEmail().equals(users.getEmail())) {
-            throw new IllegalArgumentException("마이페이지 수정 권한이 없습니다.");
-        }
         // 현재 비밀번호 확인
         String currentPassword = requestDto.getCurrentPassword();
         if (!passwordEncoder.matches(currentPassword, findProfile.getPassword())) {
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
+        // 수정할 비밀번호가 현재 비밀번호와 같은 경우
+        if (requestDto.getUpdatePassword().equals(requestDto.getCurrentPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호와 바꾸려는 비밀번호가 같습니다.");
+        }
 
         // 새로운 비밀번호 업데이트
         String updatePassword = requestDto.getUpdatePassword();
-        // 비번 수정시 같은 비번으로 수정 안되게 추가 필요
 
         // 새로운 비밀번호 인코딩 후 저장
-        findProfile.updatePassword(requestDto, passwordEncoder);
+        findProfile.getUsers().updatePassword(requestDto, passwordEncoder);
         profileRepository.save(findProfile);
 
         MessageResponseDto responseDto = new MessageResponseDto("비밀번호 수정 성공", 200);
         return ResponseEntity.ok(responseDto);
+    }
+
+
+    // 사용자 확인 메서드
+    private Users checkUser(Users users) {
+        return userRepository.findByEmail(users.getEmail()).
+                orElseThrow(() -> new CustomException(ErrorCode.ID_NOT_MATCH));
+    }
+
+    // ADMIN 권한 및 이메일 일치여부 메서드
+    private void checkAuthority(Users existUser, Users users) {
+        if (!existUser.getUserRole().equals(UserRoleEnum.ADMIN) && !existUser.getEmail().equals(users.getEmail())) {
+            throw new CustomException(ErrorCode.NOT_ALLOWED);
+        }
+    }
+
+    // 마이페이지 확인
+    private Profile checkProfile(Users users) {
+        return profileRepository.findByUsers_Email(users.getEmail())
+                .orElseThrow(() -> new CustomException(ErrorCode.PROFILE_NOT_EXIST));
+
     }
 }
