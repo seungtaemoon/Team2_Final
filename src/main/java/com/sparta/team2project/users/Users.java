@@ -1,5 +1,6 @@
 package com.sparta.team2project.users;
 
+import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.profile.dto.ProfileRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,6 +1,5 @@
 package com.sparta.team2project.tags.entity;
 
-import com.sparta.team2project.posts.dto.UpdateRequestDto;
 import com.sparta.team2project.posts.entity.Posts;
 import jakarta.persistence.*;
 import lombok.Getter;

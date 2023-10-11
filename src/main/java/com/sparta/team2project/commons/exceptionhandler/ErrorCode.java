@@ -32,9 +32,6 @@ public enum ErrorCode {
     VALID_TIME_OVER(HttpStatus.BAD_REQUEST, "인증 시간이 초과되었습니다"),
     WRONG_NUMBER(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않습니다.");
 
-    COMMENTS_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 댓글은 존재하지 않습니다.");
-
-
 
     private final HttpStatus statusCode;
     private final String msg;

@@ -1,6 +1,7 @@
 package com.sparta.team2project.schedules.service;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
+import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
@@ -8,7 +9,6 @@ import com.sparta.team2project.schedules.dto.SchedulesResponseDto;
 import com.sparta.team2project.schedules.entity.Schedules;
 import com.sparta.team2project.schedules.repository.SchedulesRepository;
 import com.sparta.team2project.users.UserRepository;
-import com.sparta.team2project.users.UserRoleEnum;
 import com.sparta.team2project.users.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

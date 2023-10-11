@@ -1,8 +1,13 @@
 package com.sparta.team2project.posts.service;
 
+import com.sparta.team2project.comments.entity.Comments;
+import com.sparta.team2project.comments.repository.CommentsRepository;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
+import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
+import com.sparta.team2project.replies.entity.Replies;
+import com.sparta.team2project.replies.repository.RepliesRepository;
 import com.sparta.team2project.tripdate.entity.TripDate;
 import com.sparta.team2project.tripdate.repository.TripDateRepository;
 import com.sparta.team2project.posts.dto.*;
@@ -15,7 +20,7 @@ import com.sparta.team2project.schedules.repository.SchedulesRepository;
 import com.sparta.team2project.tags.entity.Tags;
 import com.sparta.team2project.tags.repository.TagsRepository;
 import com.sparta.team2project.users.UserRepository;
-import com.sparta.team2project.users.UserRoleEnum;
+
 import com.sparta.team2project.users.Users;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

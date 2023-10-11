@@ -1,6 +1,6 @@
 package com.sparta.team2project.commons.security;
 
-import com.sparta.team2project.users.UserRoleEnum;
+import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.users.Users;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -1,5 +1,6 @@
 package com.sparta.team2project.schedules.entity;
 
+import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
 import com.sparta.team2project.tripdate.entity.TripDate;
 import jakarta.persistence.*;
 import lombok.Getter;

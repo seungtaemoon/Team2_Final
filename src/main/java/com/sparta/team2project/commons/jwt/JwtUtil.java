@@ -1,7 +1,6 @@
 package com.sparta.team2project.commons.jwt;
 
-
-import com.sparta.team2project.users.UserRoleEnum;
+import com.sparta.team2project.commons.entity.UserRoleEnum;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
