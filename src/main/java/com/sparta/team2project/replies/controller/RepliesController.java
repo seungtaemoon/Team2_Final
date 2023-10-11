@@ -2,6 +2,7 @@ package com.sparta.team2project.replies.controller;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
+import com.sparta.team2project.replies.dto.RepliesMeResponseDto;
 import com.sparta.team2project.replies.dto.RepliesRequestDto;
 import com.sparta.team2project.replies.dto.RepliesResponseDto;
 import com.sparta.team2project.replies.service.RepliesService;
@@ -30,6 +31,14 @@ public class RepliesController {
     @GetMapping("/comments/{commentId}/replies")
     public ResponseEntity<List<RepliesResponseDto>> repliesList(@PathVariable("commentId") Long commentId) {
         return ResponseEntity.ok(repliesService.repliesList(commentId));
+    }
+
+
+    // 마이페이지에서 내가 쓴 대댓글 조회
+    @GetMapping("/comments/{commentId}/repliesme")
+    public ResponseEntity<List<RepliesMeResponseDto>> repliesMeList(@PathVariable("commentId") Long commentId,
+                                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(repliesService.repliesMeList(commentId, userDetails.getUsers()));
     }
 
     // 대댓글 수정

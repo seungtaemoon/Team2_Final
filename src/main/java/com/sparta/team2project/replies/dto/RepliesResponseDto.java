@@ -1,7 +1,7 @@
 package com.sparta.team2project.replies.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sparta.team2project.replies.entity.Replies;
-import com.sparta.team2project.users.Users;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -11,6 +11,8 @@ public class RepliesResponseDto {
     private Long repliesId;
     private String contents;
     private String nickname;
+    @JsonIgnore
+    private String email;
     private LocalDateTime createAt;
     private LocalDateTime modifiedAt;
 
@@ -20,6 +22,7 @@ public class RepliesResponseDto {
         this.nickname = users;
         this.createAt = replies.getCreatedAt();
         this.modifiedAt = replies.getModifiedAt();
+        this.email = users;
     }
 }
 

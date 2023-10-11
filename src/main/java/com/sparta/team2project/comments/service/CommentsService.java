@@ -1,5 +1,6 @@
 package com.sparta.team2project.comments.service;
 
+import com.sparta.team2project.comments.dto.CommentsMeResponseDto;
 import com.sparta.team2project.comments.dto.CommentsRequestDto;
 import com.sparta.team2project.comments.dto.CommentsResponseDto;
 import com.sparta.team2project.comments.entity.Comments;
@@ -9,13 +10,10 @@ import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.posts.repository.PostsRepository;
-import com.sparta.team2project.replies.dto.RepliesResponseDto;
-import com.sparta.team2project.replies.entity.Replies;
 import com.sparta.team2project.users.UserRoleEnum;
 import com.sparta.team2project.users.Users;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -56,6 +54,24 @@ public class CommentsService {
         return commentsResponseDtoList;
     }
 
+   // 마이페이지에서 내가 쓴 댓글 조회
+    public List<CommentsMeResponseDto> commentsMeList (Long postId,
+                                                       Users users) {
+        List<Comments> commentsMeList = commentsRepository.findByPosts_IdOrderByCreatedAtDesc(postId);
+        if (commentsMeList.isEmpty()) {
+            throw new CustomException(ErrorCode.POST_NOT_EXIST); // 존재하지 않는 게시글입니다
+        }
+
+        List<CommentsMeResponseDto> commentsMeResponseDtoList = new ArrayList<>();
+        for (Comments comments : commentsMeList) {
+
+            if (users.getEmail().equals(comments.getEmail())) {
+                    commentsMeResponseDtoList.add(new CommentsMeResponseDto(comments, comments.getPosts().getTitle(), comments.getNickname()));
+                }
+        }
+        return commentsMeResponseDtoList;
+    }
+
     // 댓글 수정
     @Transactional
     public MessageResponseDto commentsUpdate( Long commentId,
@@ -65,7 +81,7 @@ public class CommentsService {
         if (users.getUserRole() == UserRoleEnum.ADMIN) {
             comments.update(request, users);
             return new MessageResponseDto("관리자가 댓글을 수정하였습니다", 200);
-        } else if (users.getNickName().equals(comments.getNickname())) {
+        } else if (users.getEmail().equals(comments.getEmail())) {
                 comments.update(request, users);
                 return new MessageResponseDto("댓글을 수정하였습니다", 200);
             } else {
@@ -81,7 +97,7 @@ public class CommentsService {
         if (users.getUserRole() == UserRoleEnum.ADMIN) {
             commentsRepository.delete(comments);
                 return new MessageResponseDto("관리자가 댓글을 삭제하였습니다", 200);
-        } else if (users.getNickName().equals(comments.getNickname())) {
+        } else if (users.getEmail().equals(comments.getEmail())) {
                 commentsRepository.delete(comments);
                 return new MessageResponseDto("댓글을 삭제하였습니다", 200);
             } else {

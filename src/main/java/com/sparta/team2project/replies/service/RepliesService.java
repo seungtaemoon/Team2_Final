@@ -5,6 +5,7 @@ import com.sparta.team2project.comments.repository.CommentsRepository;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
+import com.sparta.team2project.replies.dto.RepliesMeResponseDto;
 import com.sparta.team2project.replies.dto.RepliesRequestDto;
 import com.sparta.team2project.replies.dto.RepliesResponseDto;
 import com.sparta.team2project.replies.entity.Replies;
@@ -54,6 +55,24 @@ public class RepliesService {
         return repliesResponseDtoList;
     }
 
+    // 마이페이지에서 내가 쓴 대댓글 조회
+    public List<RepliesMeResponseDto> repliesMeList (Long commentId,
+                                                     Users users) {
+        List<Replies> repliesMeList = repliesRepository.findByComments_IdOrderByCreatedAtDesc(commentId);
+        if (repliesMeList.isEmpty()) {
+            throw new CustomException(ErrorCode.COMMENTS_NOT_EXIST); // 존재하지 않는 댓글입니다
+        }
+
+        List<RepliesMeResponseDto> repliesMeResponseDtoList = new ArrayList<>();
+        for (Replies replies : repliesMeList) {
+
+            if (users.getEmail().equals(replies.getEmail())) {
+                repliesMeResponseDtoList.add(new RepliesMeResponseDto(replies, replies.getComments().getPosts().getTitle(), replies.getNickname()));
+            }
+        }
+        return repliesMeResponseDtoList;
+    }
+
     @Transactional
     // 대댓글 수정
     public MessageResponseDto repliesUpdate( Long repliesId,
@@ -64,14 +83,13 @@ public class RepliesService {
         if (users.getUserRole() == UserRoleEnum.ADMIN) {
             replies.update(request, users);
             return new MessageResponseDto("관리자가 대댓글을 수정하였습니다", 200);
-        } else if (users.getNickName().equals(replies.getNickname())) {
+        } else if (users.getEmail().equals(replies.getEmail())) {
                 replies.update(request, users);
                 return new MessageResponseDto("대댓글을 수정하였습니다", 200);
             } else {
                 throw new CustomException(ErrorCode.NOT_ALLOWED); // 권한이 없습니다
         }
     }
-
 
     // 대댓글 삭제
     public MessageResponseDto repliesDelete(Long repliesId,
@@ -81,7 +99,7 @@ public class RepliesService {
         if (users.getUserRole() == UserRoleEnum.ADMIN) {
             repliesRepository.delete(replies);
             return new MessageResponseDto("관리자가 대댓글을 삭제하였습니다", 200);
-        } else if (users.getNickName().equals(replies.getNickname())) {
+        } else if (users.getEmail().equals(replies.getEmail())) {
                 repliesRepository.delete(replies);
                 return new MessageResponseDto("대댓글을 삭제하였습니다", 200);
             } else {

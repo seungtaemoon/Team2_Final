@@ -1,11 +1,11 @@
 package com.sparta.team2project.comments.controller;
 
+import com.sparta.team2project.comments.dto.CommentsMeResponseDto;
 import com.sparta.team2project.comments.dto.CommentsRequestDto;
 import com.sparta.team2project.comments.dto.CommentsResponseDto;
 import com.sparta.team2project.comments.service.CommentsService;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
-import com.sparta.team2project.users.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,6 +31,13 @@ public class CommentsController {
     @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<List<CommentsResponseDto>> commentsList(@PathVariable("postId") Long postId) {
         return ResponseEntity.ok(commentsService.commentsList(postId));
+    }
+
+    // 마이페이지에서 내가 쓴 댓글 조회
+    @GetMapping("/posts/{postId}/commentsme")
+    public ResponseEntity<List<CommentsMeResponseDto>> commentsMeList(@PathVariable("postId") Long postId,
+                                                                      @AuthenticationPrincipal UserDetailsImpl userDetails ) {
+        return ResponseEntity.ok(commentsService.commentsMeList(postId, userDetails.getUsers()));
     }
 
     // 댓글 수정

@@ -1,9 +1,7 @@
 package com.sparta.team2project.replies.entity;
 
 import com.sparta.team2project.comments.entity.Comments;
-
 import com.sparta.team2project.commons.timestamped.TimeStamped;
-import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.replies.dto.RepliesRequestDto;
 import com.sparta.team2project.users.Users;
 import jakarta.persistence.*;
@@ -23,6 +21,8 @@ public class Replies extends TimeStamped {
 
     private String nickname;
 
+    private String email;
+
     @Column(nullable = false, length = 500)
     private String contents;
 
@@ -34,6 +34,7 @@ public class Replies extends TimeStamped {
         this.nickname = users.getNickName();
         this.contents = requestDto.getContents();
         this.comments = comments;
+        this.email = users.getEmail();
     }
 
     public void update(RepliesRequestDto requestDto, Users users) {
