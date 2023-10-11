@@ -1,4 +1,4 @@
-package com.sparta.team2project.days.entity;
+package com.sparta.team2project.tripdate.entity;
 
 import com.sparta.team2project.posts.dto.DayRequestDto;
 import com.sparta.team2project.posts.entity.Posts;
@@ -14,10 +14,10 @@ import java.util.List;
 
 
 @Entity
-@Table(name = "days")
+@Table(name = "tripDate")
 @Getter
 @NoArgsConstructor
-public class Days {
+public class TripDate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,17 +25,21 @@ public class Days {
     @Column(nullable = false)
     private LocalDate chosenDate;
 
+    @Column(nullable = false)
+    private String subTitle;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "posts_id",nullable = false)
     private Posts posts;
 
-    @OneToMany(mappedBy = "days", cascade = {CascadeType.REMOVE})
-    private List<Schedules> scheduleList = new ArrayList<>();
+    @OneToMany(mappedBy = "tripDate", cascade = {CascadeType.REMOVE})
+    private List<Schedules> schedulesList = new ArrayList<>();
 
-    public Days(DayRequestDto dayRequestDto, Posts posts) {
+    public TripDate(DayRequestDto dayRequestDto, Posts posts) {
         this.chosenDate = dayRequestDto.getChosenDate();
+        this.subTitle = dayRequestDto.getSubTitle();
         this.posts = posts;
-        this.scheduleList = dayRequestDto.getScheduleList();
+        this.schedulesList = dayRequestDto.getSchedulesList();
 
     }
 }

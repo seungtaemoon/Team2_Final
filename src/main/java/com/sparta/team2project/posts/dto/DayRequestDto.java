@@ -10,5 +10,6 @@ import java.util.List;
 public class DayRequestDto {
 
     private LocalDate chosenDate;
-    private List<Schedules> scheduleList;
+    private String subTitle;
+    private List<Schedules> schedulesList;
 }

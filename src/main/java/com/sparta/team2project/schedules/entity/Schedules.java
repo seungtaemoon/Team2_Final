@@ -1,6 +1,6 @@
 package com.sparta.team2project.schedules.entity;
 
-import com.sparta.team2project.days.entity.Days;
+import com.sparta.team2project.tripdate.entity.TripDate;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,9 +20,6 @@ public class Schedules {
     // 세부일정 1차 카테고리
     @Column(name = "scheduleCategory", nullable = false)
     private SchedulesCategory schedulesCategory;
-    // 세부일정 2차 카테고리
-    @Column(name = "details", nullable = false)
-    private String details;
     // 비용
     @Column(name = "costs", nullable = false)
     private int costs;
@@ -32,27 +29,25 @@ public class Schedules {
     // 내용
     @Column(name = "contents", nullable = false)
     private String contents;
-    // 시작날짜
-    @Column(name = "startTime", nullable = false)
-    private LocalTime startTime;
-    // 종료날짜
-    @Column(name = "endTime", nullable = false)
-    private LocalTime endTime;
+    // 소요시간
+    @Column(name = "timeSpent", nullable = false)
+    private String timeSpent;
+    // URL
+    @Column(name = "referenceURL", nullable = true)
+    private String referenceURL;
 
     // 날짜별 여행계획(Days)와 양방향 관계
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="days_id")
-    private Days days;
+    @JoinColumn(name="tripDate_id")
+    private TripDate tripDate;
 
-    public Schedules(Days days,Schedules schedules) {
-        this.days=days;
+    public Schedules(TripDate tripDate, Schedules schedules) {
+        this.tripDate = tripDate;
         this.schedulesCategory = schedules.getSchedulesCategory();
         this.contents = schedules.getContents();
-        this.details = schedules.getDetails();
         this.costs = schedules.getCosts();
         this.placeName =schedules.getPlaceName();
-        this.startTime=schedules.getStartTime();
-        this.endTime=schedules.getEndTime();
-
+        this.timeSpent=schedules.getTimeSpent();
+        this.referenceURL=schedules.getReferenceURL();
     }
 }

@@ -25,13 +25,17 @@ public class PostsController {
         return ResponseEntity.ok(postsService.createPost(totalRequestDto,userDetails.getUsers()));
     }
 
+    @GetMapping("/posts/{postId}") // 단일 게시물 조회
+    public ResponseEntity<PostResponseDto> getPost(@PathVariable Long postId){return ResponseEntity.ok(postsService.getPost(postId));}
+
     @GetMapping("/posts") // 전체 게시글 조회
     public ResponseEntity<List<PostResponseDto>> getAllPosts(){ //@AuthenticationPrincipal UserDetailsImpl userDetails 추가
         return ResponseEntity.ok(postsService.getAllPosts());
     }
 
-    @GetMapping("/posts/{postId}") // 단일 게시물 조회
-    public ResponseEntity<PostResponseDto> getPost(@PathVariable Long postId){return ResponseEntity.ok(postsService.getPost(postId));}
+
+    @GetMapping("/search") // 키워드 게시물 조회
+    public ResponseEntity<List<PostResponseDto>> getKeywordPost(@RequestParam String keyword){return ResponseEntity.ok(postsService.getKeywordPosts(keyword));}
 
     @GetMapping("/posts/rank") // 랭킹 목록 조회
     public ResponseEntity<List<PostResponseDto>> getRankPosts(){return ResponseEntity.ok(postsService.getRankPosts());}
@@ -46,7 +50,7 @@ public class PostsController {
         return ResponseEntity.ok(postsService.updatePost(postId,updateRequestDto,userDetails.getUsers()));
     }
 
-    @DeleteMapping("/posts/{postId}") // 게시글 수정
+    @DeleteMapping("/posts/{postId}") // 게시글 삭제
     public ResponseEntity<MessageResponseDto> deletePost(@PathVariable Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return ResponseEntity.ok(postsService.deletePost(postId,userDetails.getUsers()));
     }

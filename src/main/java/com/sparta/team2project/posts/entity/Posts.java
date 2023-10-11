@@ -7,12 +7,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "posts")
 @Getter
@@ -26,32 +20,28 @@ public class Posts extends TimeStamped {
     private int likeNum;
 
     @Column(nullable = false)
+    private int viewNum;
+
+
+    @Column(nullable = true)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = true,length = 500)
     private String contents;
 
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private PostCategory postCategory;
 
-    @Column(nullable = false)
-    private LocalDate startDate;
-
-    @Column(nullable = false)
-    private LocalDate endDate;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_id",nullable = false)
     private Users users;
 
 
-    public Posts(String contents, String title, PostCategory postCategory, LocalDate startDate, LocalDate endDate,Users users) {
+    public Posts(String contents, String title, PostCategory postCategory,Users users) {
         this.contents = contents;
         this.title = title;
         this.postCategory = postCategory;
-        this.startDate = startDate;
-        this.endDate = endDate;
         this.users = users;
     }
 
@@ -63,11 +53,11 @@ public class Posts extends TimeStamped {
         this.likeNum+=1;
     }
 
+    public void viewCount(){this.viewNum+=1;}
+
     public void update(UpdateRequestDto updateRequestDto) {
         this.postCategory = updateRequestDto.getPostCategory();
         this.title =  updateRequestDto.getTitle();
         this.contents = updateRequestDto.getContents();
-        this.startDate = updateRequestDto.getStartDate();
-        this.endDate = updateRequestDto.getEndDate();
     }
 }
