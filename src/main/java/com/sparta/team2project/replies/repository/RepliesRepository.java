@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface RepliesRepository extends JpaRepository<Replies, Long> {
     List<Replies> findAllByCommentsOrderByCreatedAtDesc(Comments comments);
-    //List<Replies> findByCommentIdAndPostIdOrderByCreatedAtDesc(Long commentId, Long postId);
+
+    List<Replies> findByComments_IdOrderByCreatedAtDesc(Long commentId);
 }

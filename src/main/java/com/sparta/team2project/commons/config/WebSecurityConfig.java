@@ -70,8 +70,9 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/search/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/rank").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/posts/{postId}/comments/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/posts/{postId}/comments/{commentId}/replies/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/*/comments/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/*/comments/*/replies/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/comments/*/replies/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/schedules/**").permitAll()
 
 
