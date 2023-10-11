@@ -10,6 +10,6 @@ public class UpdateRequestDto {
     private String title;
     private String contents;
     private PostCategory postCategory;
-    private LocalDate startDate;
-    private LocalDate endDate;
+//    private LocalDate startDate;
+//    private LocalDate endDate;
 }

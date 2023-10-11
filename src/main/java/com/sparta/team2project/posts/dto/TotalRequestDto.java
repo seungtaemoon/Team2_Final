@@ -8,12 +8,10 @@ import java.util.List;
 
 @Getter
 public class TotalRequestDto {
-
-
     private String title;
     private String contents;
     private PostCategory postCategory;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private List<DayRequestDto> daysList;
+//    private LocalDate startDate;
+//    private LocalDate endDate;
+    private List<TripDateRequestDto> tripDateList;
 }

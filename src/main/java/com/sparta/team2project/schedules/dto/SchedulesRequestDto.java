@@ -11,12 +11,13 @@ import java.time.LocalTime;
 public class SchedulesRequestDto {
 //    private LocalDate chosenDate;
     private SchedulesCategory schedulesCategory;
-    private String details;
+//    private String details;
     private int costs;
     private String placeName;
     private String contents;
-    private LocalTime startTime;
-    private LocalTime endTime;
+//    private LocalTime startTime;
+//    private LocalTime endTime;
+    private String timeSpent;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private String referenceURL;

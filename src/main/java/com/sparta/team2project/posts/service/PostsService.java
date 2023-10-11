@@ -1,19 +1,15 @@
 package com.sparta.team2project.posts.service;
 
-import com.sparta.team2project.comments.entity.Comments;
-import com.sparta.team2project.comments.repository.CommentsRepository;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
-import com.sparta.team2project.days.entity.Days;
-import com.sparta.team2project.days.repository.DaysRepository;
+import com.sparta.team2project.tripdate.entity.TripDate;
+import com.sparta.team2project.tripdate.repository.TripDateRepository;
 import com.sparta.team2project.posts.dto.*;
 import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.postslike.entity.PostsLike;
 import com.sparta.team2project.postslike.repository.PostsLikeRepository;
-import com.sparta.team2project.replies.entity.Replies;
-import com.sparta.team2project.replies.repository.RepliesRepository;
 import com.sparta.team2project.schedules.entity.Schedules;
 import com.sparta.team2project.schedules.repository.SchedulesRepository;
 import com.sparta.team2project.users.UserRepository;
@@ -25,8 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +29,7 @@ import java.util.List;
 @Transactional
 public class PostsService {
     private final PostsRepository postsRepository;
-    private final DaysRepository daysRepository;
+    private final TripDateRepository tripDateRepository;
     private final SchedulesRepository schedulesRepository;
     private final PostsLikeRepository postsLikeRepository;
     private final UserRepository usersRepository;
@@ -53,19 +47,19 @@ public class PostsService {
         Posts posts = new Posts(totalRequestDto.getContents(),
                                 totalRequestDto.getTitle(),
                                 totalRequestDto.getPostCategory(),
-                                totalRequestDto.getStartDate(),
-                                totalRequestDto.getEndDate(),
+//                                totalRequestDto.getStartDate(),
+//                                totalRequestDto.getEndDate(),
                                 existUser);
         postsRepository.save(posts);  //posts 저장
 
-        List<DayRequestDto> dayRequestDtoList = totalRequestDto.getDaysList();
-        for(DayRequestDto dayRequestDto:dayRequestDtoList){
-            Days days = new Days(dayRequestDto,posts);
-            daysRepository.save(days); // days 저장
+        List<TripDateRequestDto> tripDateRequestDtoList = totalRequestDto.getTripDateList();
+        for(TripDateRequestDto tripDateRequestDto : tripDateRequestDtoList){
+            TripDate tripDate = new TripDate(tripDateRequestDto,posts);
+            tripDateRepository.save(tripDate); // tripDate 저장
 
             List<Schedules>schedulesList=new ArrayList<>();
-            for(Schedules schedules:dayRequestDto.getSchedulesList()) {
-                schedules = new Schedules(days,schedules);
+            for(Schedules schedules: tripDateRequestDto.getSchedulesList()) {
+                schedules = new Schedules(tripDate,schedules);
                 schedulesList.add(schedules);
             }
             schedulesRepository.saveAll(schedulesList);
@@ -168,8 +162,8 @@ public class PostsService {
         postsLikeRepository.deleteAll(postsLikeList);
 
         // 연관된 여행일자들 삭제(CascadeType.REMOVE기능:자동으로 여행 세부일정들 삭제)
-        List<Days> daysList = daysRepository.findByPosts(posts);
-        daysRepository.deleteAll(daysList);
+        List<TripDate> tripDateList = tripDateRepository.findByPosts(posts);
+        tripDateRepository.deleteAll(tripDateList);
 
         postsRepository.delete(posts); // 게시글 삭제
         return new MessageResponseDto("삭제 되었습니다.",HttpServletResponse.SC_OK);

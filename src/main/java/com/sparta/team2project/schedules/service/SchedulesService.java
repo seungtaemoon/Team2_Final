@@ -3,10 +3,6 @@ package com.sparta.team2project.schedules.service;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
-import com.sparta.team2project.commons.security.UserDetailsImpl;
-import com.sparta.team2project.posts.dto.DayRequestDto;
-import com.sparta.team2project.posts.dto.DayResponseDto;
-import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
 import com.sparta.team2project.schedules.dto.SchedulesResponseDto;
 import com.sparta.team2project.schedules.entity.Schedules;
@@ -18,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -27,11 +21,7 @@ public class SchedulesService {
 
     // 사용할 Repository 선언
     private final SchedulesRepository schedulesRepository;
-    private final PostsRepository postsRepository;
     private final UserRepository userRepository;
-//    public List<DayResponseDto> createSchedules(Long postId, Long daysId, UserDetailsImpl userDetails, DayRequestDto requestDto) {
-//
-//    }
 
     // Schedules 조회 메서드 (권한 확인 없음)
     public SchedulesResponseDto getSchedules(Long schedulesId) {
