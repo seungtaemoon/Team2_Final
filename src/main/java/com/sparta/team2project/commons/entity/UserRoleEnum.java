@@ -1,4 +1,4 @@
-package com.sparta.team2project.users;
+package com.sparta.team2project.commons.entity;
 
 public enum UserRoleEnum {
     USER(Authority.USER),  // 사용자 권한

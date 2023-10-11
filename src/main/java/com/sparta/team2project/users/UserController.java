@@ -5,8 +5,10 @@ import com.sparta.team2project.commons.security.UserDetailsImpl;
 import com.sparta.team2project.email.dto.EmailRequestDto;
 import com.sparta.team2project.users.dto.SignoutRequestDto;
 import com.sparta.team2project.users.dto.SignupRequestDto;
+
 import com.sparta.team2project.email.dto.ValidNumberRequestDto;
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,4 +46,6 @@ public class UserController {
     public ResponseEntity<MessageResponseDto> deleteUser(@RequestBody SignoutRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return userService.deleteUser(requestDto, userDetails.getEmail());
     }
+
+
 }
