@@ -1,10 +1,9 @@
 package com.sparta.team2project.commons.security;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
+import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.jwt.JwtUtil;
-import com.sparta.team2project.users.UserRoleEnum;
 import com.sparta.team2project.users.dto.LoginRequestDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;

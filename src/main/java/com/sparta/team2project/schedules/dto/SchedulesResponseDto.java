@@ -35,8 +35,6 @@ public class SchedulesResponseDto {
 //        this.startTime = schedules.getStartTime();
 //        this.endTime = schedules.getEndTime();
         this.timeSpent = schedules.getTimeSpent();
-        this.createdAt = schedules.getCreatedAt();
-        this.modifiedAt = schedules.getModifiedAt();
         this.referenceURL = schedules.getReferenceURL();
     }
 }

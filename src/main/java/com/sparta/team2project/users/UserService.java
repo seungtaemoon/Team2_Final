@@ -1,6 +1,7 @@
 package com.sparta.team2project.users;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
+import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.email.EmailService;
