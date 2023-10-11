@@ -1,8 +1,6 @@
 package com.sparta.team2project.schedules.entity;
 
-import com.sparta.team2project.commons.timestamped.TimeStamped;
 import com.sparta.team2project.tripdate.entity.TripDate;
-import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +12,7 @@ import java.time.LocalTime;
 @Getter
 @NoArgsConstructor
 @Table(name="schedules")
-public class Schedules extends TimeStamped {
+public class Schedules {
     // 일정 아이디
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,9 +20,6 @@ public class Schedules extends TimeStamped {
     // 세부일정 1차 카테고리
     @Column(name = "scheduleCategory", nullable = false)
     private SchedulesCategory schedulesCategory;
-    // 세부일정 2차 카테고리
-//    @Column(name = "details", nullable = false)
-//    private String details;
     // 비용
     @Column(name = "costs", nullable = false)
     private int costs;
@@ -34,16 +29,10 @@ public class Schedules extends TimeStamped {
     // 내용
     @Column(name = "contents", nullable = false)
     private String contents;
-//    // 시작날짜
-//    @Column(name = "startTime", nullable = false)
-//    private LocalTime startTime;
-//    // 종료날짜
-//    @Column(name = "endTime", nullable = false)
-//    private LocalTime endTime;
-    // 소요 시간
+    // 소요시간
     @Column(name = "timeSpent", nullable = false)
     private String timeSpent;
-    // 참조 자료 URL
+    // URL
     @Column(name = "referenceURL", nullable = true)
     private String referenceURL;
 
@@ -78,5 +67,4 @@ public class Schedules extends TimeStamped {
 //        this.details = requestDto.getDetails();
         this.referenceURL = requestDto.getReferenceURL();
     }
-
 }

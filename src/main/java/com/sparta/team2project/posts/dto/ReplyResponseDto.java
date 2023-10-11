@@ -9,13 +9,13 @@ import java.time.LocalDateTime;
 public class ReplyResponseDto {
     private final String contents;
     private final String nickName;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime modifiedAt;
 
-    private final LocalDateTime createTime; // 커밋전 삭제
-
-    public ReplyResponseDto(String contents, String nickName, LocalDateTime create) { // create 삭제
+    public ReplyResponseDto(String contents, String nickName, LocalDateTime createdAt, LocalDateTime modifiedAt) {
         this.contents = contents;
         this.nickName = nickName;
-
-        this.createTime = create; // 커밋전 삭제
+        this.createdAt = createdAt;
+        this.modifiedAt = modifiedAt;
     }
 }

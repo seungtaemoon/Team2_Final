@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface SchedulesRepository extends JpaRepository<Schedules, Long> {
+    Set<Schedules> findByPlaceNameContainingOrContentsContaining(String keyword, String keyword2);
 }

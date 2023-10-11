@@ -3,6 +3,8 @@ package com.sparta.team2project.users;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
+import com.sparta.team2project.profile.Profile;
+import com.sparta.team2project.profile.ProfileRepository;
 import com.sparta.team2project.users.dto.SignoutRequestDto;
 import com.sparta.team2project.users.dto.SignupRequestDto;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ProfileRepository profileRepository;
 
     // ADMIN_TOKEN
     @Value("${ADMIN_TOKEN}")
@@ -35,19 +38,16 @@ public class UserService {
         if (checkUserId.isPresent()) {
             throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
         }
-
         // 사용자 ROLE 확인
         UserRoleEnum userRole = UserRoleEnum.USER;
 
         if (requestDto.getAdminToken() != null && ADMIN_TOKEN.equals(requestDto.getAdminToken())) {
             userRole = UserRoleEnum.ADMIN; // adminToken이 제공되면 ADMIN으로 설정
-
         }
 
         // 기본값 설정
         String nickName = "익명";
         String profileImg = "https://blog.kakaocdn.net/dn/ckw6CM/btsxrWYLmoZ/IW4PRNSDLAWNZEKkZO0qM1/img.png";
-
         // 입력값이 존재한다면 기본값 대체
         if (requestDto.getNickName() != null) {
             nickName = requestDto.getNickName();
@@ -57,13 +57,14 @@ public class UserService {
         }
 
         // 사용자 등록
-        Users user = new Users(email, nickName, password, userRole, profileImg);
-        userRepository.save(user);
+        Users users = new Users(email, nickName, password, userRole, profileImg);
+        userRepository.save(users);
+        // 프로필 생성
+        Profile profile = new Profile(users);
+        profileRepository.save(profile);
 
-        // DB에 중복된 email 이 없다면 회원을 저장하고 Client 로 성공했다는 메시지, 상태코드 반환하기
         return ResponseEntity.ok(new MessageResponseDto("회원가입 완료", HttpStatus.CREATED.value()));
     }
-
 
 
     // 회원탈퇴
@@ -76,6 +77,5 @@ public class UserService {
         }
         userRepository.delete(users);
         return ResponseEntity.ok(new MessageResponseDto("회원탈퇴 완료", HttpStatus.OK.value()));
-
     }
 }

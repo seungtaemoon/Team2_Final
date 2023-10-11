@@ -45,10 +45,6 @@ public class TripDate {
 
     }
 
-    public void updateTripDate(TripDateRequestDto tripDateRequestDto){
-        this.chosenDate = tripDateRequestDto.getChosenDate();
-        this.schedulesList = tripDateRequestDto.getSchedulesList();
-    }
 
     public void updateTripDate(TripDateOnlyRequestDto tripDateOnlyRequestDto){
         this.chosenDate = tripDateOnlyRequestDto.getChosenDate();
