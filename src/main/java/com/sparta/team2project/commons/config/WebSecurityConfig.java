@@ -68,10 +68,13 @@ public class WebSecurityConfig {
 
                         // 조회기능은 누구나 가능합니다!
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/search/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/rank").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/*/comments/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/*/comments/*/replies/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/comments/*/replies/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/schedules/**").permitAll()
+
 
                         .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );

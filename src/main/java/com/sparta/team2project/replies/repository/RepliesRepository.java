@@ -7,8 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface RepliesRepository extends JpaRepository<Replies, Long> {
-
-
     List<Replies> findAllByCommentsOrderByCreatedAtDesc(Comments comments);
 
     List<Replies> findByComments_IdOrderByCreatedAtDesc(Long commentId);
