@@ -18,7 +18,7 @@ public class PostsLike {
     private Posts posts;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "users_id")
     private Users users;
 
     public PostsLike(Posts posts, Users users) {

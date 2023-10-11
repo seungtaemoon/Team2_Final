@@ -7,6 +7,6 @@ public enum SchedulesCategory {
     교통,
     숙박,
     즐길거리,
-    음식;
+    음식
 }
 

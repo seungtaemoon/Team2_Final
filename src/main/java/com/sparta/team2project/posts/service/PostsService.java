@@ -1,7 +1,5 @@
 package com.sparta.team2project.posts.service;
 
-import com.sparta.team2project.comments.entity.Comments;
-import com.sparta.team2project.comments.repository.CommentsRepository;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
@@ -12,8 +10,6 @@ import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.postslike.entity.PostsLike;
 import com.sparta.team2project.postslike.repository.PostsLikeRepository;
-import com.sparta.team2project.replies.entity.Replies;
-import com.sparta.team2project.replies.repository.RepliesRepository;
 import com.sparta.team2project.schedules.entity.Schedules;
 import com.sparta.team2project.schedules.repository.SchedulesRepository;
 import com.sparta.team2project.tags.entity.Tags;
@@ -58,13 +54,13 @@ public class PostsService {
                 .map(tag -> new Tags(tag, posts))
                 .forEach(tagsRepository::save); // tags 저장
 
-        List<DayRequestDto> dayRequestDtoList = totalRequestDto.getDaysList();
-        for(DayRequestDto dayRequestDto:dayRequestDtoList){
-            TripDate tripDate = new TripDate(dayRequestDto,posts);
+        List<TripDateRequestDto> tripDateRequestDtoList = totalRequestDto.getTripDateList();
+        for(TripDateRequestDto tripDateRequestDto : tripDateRequestDtoList){
+            TripDate tripDate = new TripDate(tripDateRequestDto,posts);
             tripDateRepository.save(tripDate); // tripDate 저장
 
             List<Schedules>schedulesList=new ArrayList<>();
-            for(Schedules schedules:dayRequestDto.getSchedulesList()) {
+            for(Schedules schedules: tripDateRequestDto.getSchedulesList()) {
                 schedules = new Schedules(tripDate,schedules);
                 schedulesList.add(schedules);
             }
@@ -119,7 +115,7 @@ public class PostsService {
 
     // 키워드 검색
     public List<PostResponseDto> getKeywordPosts(String keyword){
-        
+
         if(keyword==null){ // 키워드가 null값인 경우
             return getAllPosts();
         }

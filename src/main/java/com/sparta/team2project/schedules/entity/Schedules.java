@@ -36,18 +36,35 @@ public class Schedules {
     @Column(name = "referenceURL", nullable = true)
     private String referenceURL;
 
-    // 날짜별 여행계획(Days)와 양방향 관계
+    // 날짜별 여행계획(TripDate)와 양방향 관계
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="tripDate_id")
     private TripDate tripDate;
 
     public Schedules(TripDate tripDate, Schedules schedules) {
         this.tripDate = tripDate;
-        this.schedulesCategory = schedules.getSchedulesCategory();
-        this.contents = schedules.getContents();
-        this.costs = schedules.getCosts();
-        this.placeName =schedules.getPlaceName();
-        this.timeSpent=schedules.getTimeSpent();
-        this.referenceURL=schedules.getReferenceURL();
+        this.schedulesCategory=schedules.getSchedulesCategory();
+//        this.endTime=schedules.getEndTime();
+//        this.startTime=schedules.getStartTime();
+        this.timeSpent = schedules.getTimeSpent();
+        this.costs=schedules.getCosts();
+        this.contents=schedules.getContents();
+        this.placeName=schedules.getPlaceName();
+//        this.details= schedules.getDetails();
+        this.referenceURL = schedules.getReferenceURL();
+    }
+
+    // DTO로 직접 업데이트
+    public void update(SchedulesRequestDto requestDto){
+//        this.tripDate = updateTripDate(tripDate, requestDto);
+        this.schedulesCategory = requestDto.getSchedulesCategory();
+//        this.startTime = requestDto.getStartTime();
+//        this.endTime = requestDto.getEndTime();
+        this.timeSpent = requestDto.getTimeSpent();
+        this.costs = requestDto.getCosts();
+        this.contents = requestDto.getContents();
+        this.placeName = requestDto.getPlaceName();
+//        this.details = requestDto.getDetails();
+        this.referenceURL = requestDto.getReferenceURL();
     }
 }

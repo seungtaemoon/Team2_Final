@@ -1,6 +1,7 @@
 package com.sparta.team2project.tripdate.entity;
 
-import com.sparta.team2project.posts.dto.DayRequestDto;
+import com.sparta.team2project.posts.dto.TripDateOnlyRequestDto;
+import com.sparta.team2project.posts.dto.TripDateRequestDto;
 import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.schedules.entity.Schedules;
 import jakarta.persistence.*;
@@ -18,6 +19,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class TripDate {
+    // 여행날짜 아이디
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,11 +37,17 @@ public class TripDate {
     @OneToMany(mappedBy = "tripDate", cascade = {CascadeType.REMOVE})
     private List<Schedules> schedulesList = new ArrayList<>();
 
-    public TripDate(DayRequestDto dayRequestDto, Posts posts) {
-        this.chosenDate = dayRequestDto.getChosenDate();
-        this.subTitle = dayRequestDto.getSubTitle();
+    public TripDate(TripDateRequestDto tripDateRequestDto, Posts posts) {
+        this.chosenDate = tripDateRequestDto.getChosenDate();
         this.posts = posts;
-        this.schedulesList = dayRequestDto.getSchedulesList();
+        this.subTitle = tripDateRequestDto.getSubTitle();
+        this.schedulesList = tripDateRequestDto.getSchedulesList();
 
+    }
+
+
+    public void updateTripDate(TripDateOnlyRequestDto tripDateOnlyRequestDto){
+        this.chosenDate = tripDateOnlyRequestDto.getChosenDate();
+        this.subTitle = tripDateOnlyRequestDto.getSubTitle();
     }
 }
