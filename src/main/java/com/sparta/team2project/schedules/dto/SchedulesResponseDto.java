@@ -22,6 +22,7 @@ public class SchedulesResponseDto {
     private LocalTime endTime;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private String referenceURL;
 
     public SchedulesResponseDto(Schedules schedules){
 //        this.chosenDate = schedules.getDays().getChosenDate(); // 해당 스케줄에 대한 요일 반환
@@ -34,5 +35,6 @@ public class SchedulesResponseDto {
         this.endTime = schedules.getEndTime();
         this.createdAt = schedules.getCreatedAt();
         this.modifiedAt = schedules.getModifiedAt();
+        this.referenceURL = schedules.getReferenceURL();
     }
 }

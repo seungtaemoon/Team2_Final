@@ -17,10 +17,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DayResponseDto {
     private final LocalDate chosenDate;
+    private final String subTitle;
     private final List<SchedulesResponseDto> schedulesList;
 
     public DayResponseDto(Days days){
         this.chosenDate = days.getChosenDate();
+        this.subTitle = days.getSubTitle();
         this.schedulesList = schedulesToDto(days.getSchedulesList());
     }
 

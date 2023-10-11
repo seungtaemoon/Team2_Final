@@ -1,7 +1,7 @@
 package com.sparta.team2project.days.entity;
 
+import com.sparta.team2project.posts.dto.DaysOnlyRequestDto;
 import com.sparta.team2project.posts.dto.DayRequestDto;
-import com.sparta.team2project.posts.dto.DayResponseDto;
 import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.schedules.entity.Schedules;
 import jakarta.persistence.*;
@@ -27,6 +27,9 @@ public class Days {
     @Column(nullable = false)
     private LocalDate chosenDate;
 
+    @Column(nullable = false)
+    private String subTitle;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "posts_id",nullable = false)
     private Posts posts;
@@ -37,16 +40,18 @@ public class Days {
     public Days(DayRequestDto dayRequestDto, Posts posts) {
         this.chosenDate = dayRequestDto.getChosenDate();
         this.posts = posts;
+        this.subTitle = dayRequestDto.getSubTitle();
         this.schedulesList = dayRequestDto.getSchedulesList();
 
-    }
-
-    public void updateChosenDate(DayRequestDto dayRequestDto) {
-        this.chosenDate = dayRequestDto.getChosenDate();
     }
 
     public void updateDays(DayRequestDto dayRequestDto){
         this.chosenDate = dayRequestDto.getChosenDate();
         this.schedulesList = dayRequestDto.getSchedulesList();
+    }
+
+    public void updateDays(DaysOnlyRequestDto daysOnlyRequestDto){
+        this.chosenDate = daysOnlyRequestDto.getChosenDate();
+        this.subTitle = daysOnlyRequestDto.getSubTitle();
     }
 }

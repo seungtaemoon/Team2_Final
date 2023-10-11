@@ -3,6 +3,7 @@ package com.sparta.team2project.schedules.entity;
 import com.sparta.team2project.commons.timestamped.TimeStamped;
 import com.sparta.team2project.commons.timestamped.TimeStamped;
 import com.sparta.team2project.days.entity.Days;
+import com.sparta.team2project.posts.dto.DayRequestDto;
 import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -42,6 +43,9 @@ public class Schedules extends TimeStamped {
     // 종료날짜
     @Column(name = "endTime", nullable = false)
     private LocalTime endTime;
+    // 참조 자료 URL
+    @Column(name = "referenceURL", nullable = true)
+    private String referenceURL;
 
     // 날짜별 여행계획(Days)와 양방향 관계
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,8 +61,10 @@ public class Schedules extends TimeStamped {
         this.contents=schedules.getContents();
         this.placeName=schedules.getPlaceName();
         this.details= schedules.getDetails();
+        this.referenceURL = schedules.getReferenceURL();
     }
 
+    // DTO로 직접 업데이트
     public void update(SchedulesRequestDto requestDto){
 //        this.days = updateDays(days, requestDto);
         this.schedulesCategory = requestDto.getSchedulesCategory();
@@ -68,6 +74,7 @@ public class Schedules extends TimeStamped {
         this.contents = requestDto.getContents();
         this.placeName = requestDto.getPlaceName();
         this.details = requestDto.getDetails();
+        this.referenceURL = requestDto.getReferenceURL();
     }
 
     // Days 객체의 chosenDate를 업데이트하기 위한 메서드

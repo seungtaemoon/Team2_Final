@@ -19,4 +19,5 @@ public class SchedulesRequestDto {
     private LocalTime endTime;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private String referenceURL;
 }
