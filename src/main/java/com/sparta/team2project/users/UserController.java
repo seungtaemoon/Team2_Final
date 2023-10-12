@@ -23,7 +23,7 @@ public class UserController {
 
     // 회원가입(이메일 가입)
     @PostMapping("/signup")
-    public ResponseEntity<MessageResponseDto> signup(@RequestBody SignupRequestDto signupRequestDto) {
+    public ResponseEntity<MessageResponseDto> signup(@RequestBody @Valid SignupRequestDto signupRequestDto) {
         return userService.signup(signupRequestDto);
     }
 
