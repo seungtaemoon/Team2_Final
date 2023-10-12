@@ -53,13 +53,20 @@ public class UserService {
             userRole = UserRoleEnum.ADMIN; // adminToken이 제공되면 ADMIN으로 설정
         }
 
-        // 기본값 설정
-        String nickName = "익명";
-        String profileImg = "https://blog.kakaocdn.net/dn/ckw6CM/btsxrWYLmoZ/IW4PRNSDLAWNZEKkZO0qM1/img.png";
-        // 입력값이 존재한다면 기본값 대체
-        if (requestDto.getNickName() != null) {
-            nickName = requestDto.getNickName();
+        // 비밀번호 유효성 검사
+        if (!isValidPassword(requestDto.getPassword())) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
+
+        String nickName = requestDto.getNickName();
+        if (nickName == null) {
+            nickName = "익명"; // 닉네임이 null인 경우 "익명"으로 처리
+        } else if (!isValidNickName(nickName)) {
+            throw new CustomException(ErrorCode.INVALID_NICKNAME);
+        }
+
+        String profileImg = "https://blog.kakaocdn.net/dn/ckw6CM/btsxrWYLmoZ/IW4PRNSDLAWNZEKkZO0qM1/img.png";
+
         if (requestDto.getProfileImg() != null) {
             profileImg = requestDto.getProfileImg();
         }
@@ -148,6 +155,20 @@ public class UserService {
         }
         userRepository.delete(users);
         return ResponseEntity.ok(new MessageResponseDto("회원탈퇴 완료", HttpStatus.OK.value()));
+    }
+
+
+
+    private boolean isValidPassword(String password) {
+        // 비밀번호는 대소문자, 숫자, 특수문자( !@#$%^&* )로만 구성된 8~15자의 문자열이어야 합니다.
+        String passwordRegex = "^[a-zA-Z0-9!@#$%^&*]{8,15}$";
+        return password.matches(passwordRegex);
+    }
+
+    private boolean isValidNickName(String nickName) {
+        // 닉네임은 2글자 이상, 10글자 이하의 영문자, 숫자, 또는 한글로만 구성되어야 합니다.
+        String nickNameRegex = "^[A-Za-z0-9가-힣]{2,10}$";
+        return nickName.matches(nickNameRegex);
     }
 
 }
