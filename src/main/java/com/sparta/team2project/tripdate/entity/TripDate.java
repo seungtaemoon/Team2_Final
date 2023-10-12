@@ -1,5 +1,6 @@
 package com.sparta.team2project.tripdate.entity;
 
+import com.sparta.team2project.posts.dto.TotalRequestDto;
 import com.sparta.team2project.posts.dto.TripDateOnlyRequestDto;
 import com.sparta.team2project.posts.dto.TripDateRequestDto;
 import com.sparta.team2project.posts.entity.Posts;
@@ -44,7 +45,6 @@ public class TripDate {
         this.schedulesList = tripDateRequestDto.getSchedulesList();
 
     }
-
 
     public void updateTripDate(TripDateOnlyRequestDto tripDateOnlyRequestDto){
         this.chosenDate = tripDateOnlyRequestDto.getChosenDate();

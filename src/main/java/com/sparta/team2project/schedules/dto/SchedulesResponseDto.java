@@ -21,8 +21,6 @@ public class SchedulesResponseDto {
     private String timeSpent;
     //    private LocalTime startTime;
 //    private LocalTime endTime;
-    private LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
     private String referenceURL;
 
     public SchedulesResponseDto(Schedules schedules){
