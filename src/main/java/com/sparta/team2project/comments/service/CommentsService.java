@@ -14,6 +14,10 @@ import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.users.Users;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -40,18 +44,19 @@ public class CommentsService {
     }
 
     // 댓글 조회
-    public List<CommentsResponseDto> commentsList(Long postId) {
-        List<Comments> commentsList = commentsRepository.findByPosts_IdOrderByCreatedAtDesc(postId);
-        if (commentsList.isEmpty()) {
+    public Page<CommentsResponseDto> commentsList(Long postId,
+                                                  int page) {
+        int size = 5;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Comments> commentsPageList = commentsRepository.findByPosts_Id(postId, pageable);
+
+        if (commentsPageList.isEmpty()) {
             throw new CustomException(ErrorCode.POST_NOT_EXIST); // 존재하지 않는 게시글입니다
         }
 
-        List<CommentsResponseDto> commentsResponseDtoList = new ArrayList<>();
+        Page<CommentsResponseDto> commentsResponseDtoPage = commentsPageList.map(comments -> new CommentsResponseDto(comments, comments.getNickname()));
 
-        for (Comments comments : commentsList) {
-            commentsResponseDtoList.add(new CommentsResponseDto(comments, comments.getNickname()));
-        }
-        return commentsResponseDtoList;
+        return commentsResponseDtoPage;
     }
 
    // 마이페이지에서 내가 쓴 댓글 조회

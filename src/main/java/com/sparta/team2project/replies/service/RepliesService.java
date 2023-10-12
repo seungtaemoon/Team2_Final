@@ -13,6 +13,10 @@ import com.sparta.team2project.replies.entity.Replies;
 import com.sparta.team2project.replies.repository.RepliesRepository;
 import com.sparta.team2project.users.Users;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,18 +45,19 @@ public class RepliesService {
     }
 
     // 대댓글 조회
-    public List<RepliesResponseDto> repliesList(Long commentId) {
-        List<Replies> repliesList = repliesRepository.findByComments_IdOrderByCreatedAtDesc(commentId);
-        if (repliesList.isEmpty()) {
+    public Page<RepliesResponseDto> repliesList(Long commentId,
+                                                int page) {
+        int size = 5;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Replies> repliesPageList = repliesRepository.findByComments_Id(commentId, pageable);
+
+        if (repliesPageList.isEmpty()) {
             throw new CustomException(ErrorCode.COMMENTS_NOT_EXIST); // 존재하지 않는 댓글입니다
         }
 
-        List<RepliesResponseDto> repliesResponseDtoList = new ArrayList<>();
+        Page<RepliesResponseDto> repliesResponseDtoPage = repliesPageList.map(replies -> new RepliesResponseDto(replies, replies.getNickname()));
 
-        for (Replies replies : repliesList) {
-            repliesResponseDtoList.add(new RepliesResponseDto(replies, replies.getNickname()));
-        }
-        return repliesResponseDtoList;
+        return repliesResponseDtoPage;
     }
 
     // 마이페이지에서 내가 쓴 대댓글 조회

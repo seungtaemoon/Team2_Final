@@ -7,6 +7,7 @@ import com.sparta.team2project.replies.dto.RepliesRequestDto;
 import com.sparta.team2project.replies.dto.RepliesResponseDto;
 import com.sparta.team2project.replies.service.RepliesService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -29,8 +30,9 @@ public class RepliesController {
 
     // 대댓글 조회
     @GetMapping("/comments/{commentId}/replies")
-    public ResponseEntity<List<RepliesResponseDto>> repliesList(@PathVariable("commentId") Long commentId) {
-        return ResponseEntity.ok(repliesService.repliesList(commentId));
+    public ResponseEntity<Page<RepliesResponseDto>> repliesList(@PathVariable("commentId") Long commentId,
+                                                                @RequestParam("page") int page) {
+        return ResponseEntity.ok(repliesService.repliesList(commentId, page-1));
     }
 
 
