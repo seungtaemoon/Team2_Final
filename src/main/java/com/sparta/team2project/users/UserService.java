@@ -52,12 +52,11 @@ public class UserService {
         if (requestDto.getAdminToken() != null && ADMIN_TOKEN.equals(requestDto.getAdminToken())) {
             userRole = UserRoleEnum.ADMIN; // adminToken이 제공되면 ADMIN으로 설정
         }
-
         // 비밀번호 유효성 검사
         if (!isValidPassword(requestDto.getPassword())) {
             throw new CustomException(ErrorCode.INVALID_PASSWORD);
         }
-
+        // 닉네임 유효성 검사
         String nickName = requestDto.getNickName();
         if (nickName == null) {
             nickName = "익명"; // 닉네임이 null인 경우 "익명"으로 처리
@@ -66,11 +65,18 @@ public class UserService {
         }
 
         String profileImg = "https://blog.kakaocdn.net/dn/ckw6CM/btsxrWYLmoZ/IW4PRNSDLAWNZEKkZO0qM1/img.png";
-
         if (requestDto.getProfileImg() != null) {
             profileImg = requestDto.getProfileImg();
         }
-
+        // 인증한 이메일과 같은 이메일인지 확인
+        if (!email.equals(validNumberRepository.findByEmail(email).get().getEmail())) {
+            throw new CustomException(ErrorCode.EMAIL_NOT_VALIDATED); // 인증한 이메일과 다른 이메일을 사용한 경우 에러 처리
+        }
+//        // 이메일 인증 확인 (로그인 힘들어지니까 나중에 추가. request값 변경 필요. 현재는 인증 번호 확인 메서드 사용 중)
+//        boolean isEmailVerified = checkValidNumber(requestDto.getValidNumber(), email); // 여기서 인증번호 확인
+//        if (!isEmailVerified) {
+//            throw new CustomException(ErrorCode.EMAIL_VERIFICATION_FAILED);
+//        }
         // 사용자 등록
         Users users = new Users(email, nickName, password, userRole, profileImg);
         userRepository.save(users);
@@ -108,7 +114,7 @@ public class UserService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HHmmss"); // 현재시간에서 HHmmss 형식으로 시간을 가져옴
         long formatedNow = Long.parseLong(now.format(formatter));
 
-        ValidNumber validNumber = new ValidNumber(number, email, formatedNow);
+        ValidNumber validNumber = new ValidNumber(number, email, formatedNow);//받는 값
         validNumberRepository.save(validNumber);
 
         emailService.sendNumber(number, email);
@@ -122,7 +128,7 @@ public class UserService {
 
         LocalTime now = LocalTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HHmmss"); // 현재시간에서 HHmmss 형식으로 시간을 가져옴.
-        long formatedNow = Long.parseLong(now.format(formatter));
+        long formatedNow = Long.parseLong(now.format(formatter)); //
 
         Optional<ValidNumber> validNumberEmail = validNumberRepository.findByEmail(email);
 
@@ -133,7 +139,7 @@ public class UserService {
         ValidNumber validNumber = validNumberEmail.get();
         double time = validNumber.getTime();
 
-        if(formatedNow - time >= 300){ // 인증번호 발급 받은지 3분 초과
+        if(formatedNow - time >= 300){ // 인증번호 발급 받은지 3분 초과, formatedNow : 현재시간, time : 인증번호 발급 시간
             throw new CustomException(ErrorCode.VALID_TIME_OVER);
         }
 //        number != validNumber.getValidNumber()

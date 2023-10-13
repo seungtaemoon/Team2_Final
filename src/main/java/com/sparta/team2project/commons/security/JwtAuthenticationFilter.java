@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.jwt.JwtUtil;
+import com.sparta.team2project.users.UserRepository;
+import com.sparta.team2project.users.Users;
 import com.sparta.team2project.users.dto.LoginRequestDto;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,18 +16,20 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
         setFilterProcessesUrl("/api/users/login");
     }
 
@@ -80,10 +84,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         String errorMessage = "로그인 실패";
         if (failed instanceof BadCredentialsException) {
-            errorMessage = "잘못된 비밀번호입니다.";
-        } else if (failed instanceof UsernameNotFoundException) {
-            errorMessage = "해당 사용자를 찾을 수 없습니다.";
+            // 이메일이 존재하는지 확인
+            String email = request.getParameter("email");
+            Optional<Users> user = userRepository.findByEmail(email);
+            if (!user.isPresent()) {
+                errorMessage = "해당 사용자를 찾을 수 없습니다.";
+            } else {
+                errorMessage = "잘못된 비밀번호입니다.";
+            }
         }
+
 
         MessageResponseDto responseDto = new MessageResponseDto(errorMessage, 400);
 
