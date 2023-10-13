@@ -35,7 +35,6 @@ public class Comments extends TimeStamped {
     private Posts posts;
 
     @OneToMany (mappedBy = "comments", orphanRemoval = true)
-    @OrderBy("createdAt asc")
     private List<Replies> repliesList= new ArrayList<>();
 
 
