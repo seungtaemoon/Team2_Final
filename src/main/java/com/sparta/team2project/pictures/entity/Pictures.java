@@ -24,11 +24,11 @@ public class Pictures {
     @JoinColumn(name = "schedules_id",nullable = false)
     private Schedules schedules;
 
-    public Pictures(PicturesRequestDto requestDto){
-        this.pictureURL = requestDto.getPictureURL();
+    public Pictures(String pictureURL){
+        this.pictureURL = pictureURL;
     }
 
-    public void updatePictures(PicturesRequestDto requestDto){
-        this.pictureURL = requestDto.getPictureURL();
+    public void updatePictures(String pictureURL){
+        this.pictureURL = pictureURL;
     }
 }

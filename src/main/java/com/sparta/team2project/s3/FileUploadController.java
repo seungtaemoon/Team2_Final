@@ -26,6 +26,7 @@ public class FileUploadController {
 
     @PostMapping
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        // 파일 등록
         try {
             String fileName = file.getOriginalFilename();
             String fileUrl = "https://" + bucket + "/test" +fileName;
@@ -34,6 +35,8 @@ public class FileUploadController {
             metadata.setContentLength(file.getSize());
             amazonS3Client.putObject(bucket,fileName,file.getInputStream(),metadata);
             return ResponseEntity.ok(fileUrl);
+
+            // 실패시 예외 처리
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

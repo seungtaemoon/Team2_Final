@@ -33,6 +33,7 @@ public enum ErrorCode {
     WRONG_NUMBER(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않습니다.");
 
 
+
     private final HttpStatus statusCode;
     private final String msg;
 

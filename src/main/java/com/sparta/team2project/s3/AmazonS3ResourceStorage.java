@@ -22,13 +22,18 @@ public class AmazonS3ResourceStorage {
 
     public void store(String fullPath, MultipartFile multipartFile) {
         File file = new File(MultipartUtil.getLocalHomeDirectory(), fullPath);
+        // 파일 전송
         try {
             multipartFile.transferTo(file);
             amazonS3Client.putObject(new PutObjectRequest(bucket, fullPath, file)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
-        } catch (Exception e) {
+        }
+        // 실패시 예외 처리
+        catch (Exception e) {
             throw new RuntimeException();
-        } finally {
+        }
+        // 파일 존재시 삭제 처리
+        finally {
             if (file.exists()) {
                 file.delete();
             }
