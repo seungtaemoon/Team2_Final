@@ -18,17 +18,23 @@ public class Pictures {
     private Long id;
 
     @Column(nullable = true)
-    private String pictureURL;
+    private String picturesURL;
+
+    @Column(nullable = true)
+    private String picturesName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedules_id",nullable = false)
     private Schedules schedules;
 
-    public Pictures(String pictureURL){
-        this.pictureURL = pictureURL;
+    public Pictures(Schedules schedules, String picturesURL, String picturesName){
+        this.schedules = schedules;
+        this.picturesURL = picturesURL;
+        this.picturesName = picturesName;
     }
 
-    public void updatePictures(String pictureURL){
-        this.pictureURL = pictureURL;
+    public void updatePictures(String picturesURL, String picturesName){
+        this.picturesURL = picturesURL;
+        this.picturesName = picturesName;
     }
 }

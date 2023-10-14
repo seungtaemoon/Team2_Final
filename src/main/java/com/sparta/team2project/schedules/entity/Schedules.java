@@ -1,5 +1,6 @@
 package com.sparta.team2project.schedules.entity;
 
+import com.sparta.team2project.pictures.entity.Pictures;
 import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
 import com.sparta.team2project.tripdate.entity.TripDate;
 import jakarta.persistence.*;
@@ -7,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -42,6 +45,10 @@ public class Schedules {
     @JoinColumn(name="tripDate_id")
     private TripDate tripDate;
 
+    // 사진모음(Pictures)와 양방향 관계
+    @OneToMany(mappedBy = "schedules", cascade = {CascadeType.REMOVE})
+    private List<Pictures> picturesList = new ArrayList<>();
+
     public Schedules(TripDate tripDate, Schedules schedules) {
         this.tripDate = tripDate;
         this.schedulesCategory=schedules.getSchedulesCategory();
@@ -53,6 +60,7 @@ public class Schedules {
         this.placeName=schedules.getPlaceName();
 //        this.details= schedules.getDetails();
         this.referenceURL = schedules.getReferenceURL();
+        this.picturesList = schedules.getPicturesList();
     }
 
     // DTO로 직접 업데이트

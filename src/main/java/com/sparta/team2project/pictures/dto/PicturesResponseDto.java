@@ -7,10 +7,10 @@ import lombok.Getter;
 @Getter
 public class PicturesResponseDto {
     private final String picturesURL;
-    private final MessageResponseDto messageResponseDto;
+    private final String picturesName;
 
-    public PicturesResponseDto(String picturesURL, MessageResponseDto messageResponseDto) {
+    public PicturesResponseDto(String picturesURL, String picturesName) {
         this.picturesURL = picturesURL;
-        this.messageResponseDto = messageResponseDto;
+        this.picturesName = picturesName;
     }
 }
