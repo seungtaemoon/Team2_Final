@@ -9,6 +9,10 @@ import com.sparta.team2project.replies.service.RepliesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -34,17 +38,18 @@ public class RepliesController {
     // 대댓글 조회
     @Operation(summary = "댓글별 대댓글 조회", description = "댓글별 대댓글 조회 api 입니다.")
     @GetMapping("/comments/{commentId}/replies")
-    public ResponseEntity<List<RepliesResponseDto>> repliesList(@PathVariable("commentId") Long commentId) {
-        return ResponseEntity.ok(repliesService.repliesList(commentId));
+    public ResponseEntity<Slice<RepliesResponseDto>> repliesList(@PathVariable("commentId") Long commentId,
+                                                                 @PageableDefault Pageable pageable) {
+        return ResponseEntity.ok(repliesService.repliesList(commentId, pageable));
     }
-
 
     // 마이페이지에서 내가 쓴 대댓글 조회
     @Operation(summary = "사용자별 대댓글 조회", description = "사용자가 쓴 대댓글 조회 api 입니다.")
     @GetMapping("/comments/{commentId}/repliesme")
-    public ResponseEntity<List<RepliesMeResponseDto>> repliesMeList(@PathVariable("commentId") Long commentId,
-                                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.ok(repliesService.repliesMeList(commentId, userDetails.getUsers()));
+    public ResponseEntity<Slice<RepliesMeResponseDto>> repliesMeList(@PathVariable("commentId") Long commentId,
+                                                                    @AuthenticationPrincipal UserDetailsImpl userDetails,
+                                                                    @PageableDefault Pageable pageable) {
+        return ResponseEntity.ok(repliesService.repliesMeList(commentId, userDetails.getUsers(), pageable));
     }
 
     // 대댓글 수정
