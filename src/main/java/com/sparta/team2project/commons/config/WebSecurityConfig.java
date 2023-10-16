@@ -2,7 +2,7 @@ package com.sparta.team2project.commons.config;
 
 
 import com.sparta.team2project.commons.jwt.JwtUtil;
-import com.sparta.team2project.commons.security.JwtAuthenticationFilter;
+
 import com.sparta.team2project.commons.security.JwtAuthorizationFilter;
 import com.sparta.team2project.commons.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class WebSecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
-    private final AuthenticationConfiguration authenticationConfiguration;
+ //   private final AuthenticationConfiguration authenticationConfiguration;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -45,12 +45,12 @@ public class WebSecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil);
-        filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
-        return filter;
-    }
+//    @Bean
+//    public JwtAuthenticationFilter jwtAuthenticationFilter() throws Exception {
+//        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtUtil);
+//        filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
+//        return filter;
+//    }
 
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() {
@@ -96,23 +96,22 @@ public class WebSecurityConfig {
                                 .requestMatchers("/").permitAll() // 메인 페이지 요청 허가
                                 .requestMatchers("/api/users/**").permitAll() // '/api/user/'로 시작하는 요청 모두 접근 허가
 //                        .requestMatchers("/api/users/email/**").permitAll() // '/api/user/'로 시작하는 요청 모두 접근 허가
-                                // 조회기능은 누구나 가능합니다!
-                                .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/search/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/posts/rank").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/posts/*/comments/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/posts/*/comments/*/replies/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/comments/*/replies/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/schedules/**").permitAll()
-                                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+                        // 조회기능은 누구나 가능합니다!
+                        .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/search/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/rank").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/*/comments/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/*/comments/*/replies/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/comments/*/replies/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/schedules/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll() // OpenAPI UI에 대한 엑세스 권한 허용
+
 
                                 .anyRequest().authenticated() // 그 외 모든 요청 인증처리
         );
 
         // 필터 관리
-        http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
-        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
+        http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
