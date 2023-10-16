@@ -68,10 +68,10 @@ public class UserService {
         if (requestDto.getProfileImg() != null) {
             profileImg = requestDto.getProfileImg();
         }
-        // 인증한 이메일과 같은 이메일인지 확인
-        if (!email.equals(validNumberRepository.findByEmail(email).get().getEmail())) {
-            throw new CustomException(ErrorCode.EMAIL_NOT_VALIDATED); // 인증한 이메일과 다른 이메일을 사용한 경우 에러 처리
-        }
+//        // 인증한 이메일과 같은 이메일인지 확인
+//        if (!email.equals(validNumberRepository.findByEmail(email).get().getEmail())) {
+//            throw new CustomException(ErrorCode.EMAIL_NOT_VALIDATED); // 인증한 이메일과 다른 이메일을 사용한 경우 에러 처리
+//        }
 //        // 이메일 인증 확인 (로그인 힘들어지니까 나중에 추가. request값 변경 필요. 현재는 인증 번호 확인 메서드 사용 중)
 //        boolean isEmailVerified = checkValidNumber(requestDto.getValidNumber(), email); // 여기서 인증번호 확인
 //        if (!isEmailVerified) {

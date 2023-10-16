@@ -32,6 +32,8 @@ public enum ErrorCode {
     VALID_TIME_OVER(HttpStatus.BAD_REQUEST, "인증 시간이 초과되었습니다"),
     WRONG_NUMBER(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않습니다."),
     INVALID_PASSWORD(HttpStatus.BAD_REQUEST,"비밀번호는 대소문자, 숫자, 특수문자( !@#$%^&* )로만 구성된 8~15자의 문자열이어야 합니다."),
+    EMAIL_NOT_VALIDATED(HttpStatus.BAD_REQUEST, "이메일 인증이 완료되지 않은 이메일입니다."),
+    EMAIL_VERIFICATION_FAILED(HttpStatus.BAD_REQUEST, "이메일을 인증해주세요."),
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST,"닉네임은 2글자 이상, 10글자 이하의 영문자, 숫자, 또는 한글로만 구성되어야 합니다.");
 
 

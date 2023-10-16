@@ -64,7 +64,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUsers().getUserRole();
 
         String token = jwtUtil.createToken(email, role); // username -> email
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, String.valueOf(token)); // 헤더에 담기
+        response.addHeader("Authorization", token);
 
         MessageResponseDto responseDto = new MessageResponseDto("로그인 성공", 200);
 

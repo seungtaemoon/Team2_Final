@@ -29,6 +29,8 @@ public class Users {
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum userRole;
 
+    private Long kakaoId;
+
     @Column(nullable = false)
     private String profileImg;
 
@@ -47,6 +49,19 @@ public class Users {
         this.profileImg = profileImg;
     }
 
+
+    public Users(Long kakaoId, String email, String password, String nickName, UserRoleEnum userRole, String profileImg) {
+//        this.username = username;
+        this.kakaoId =kakaoId;
+        this.email = email;
+        this.password = password;
+        this.nickName = nickName;
+        this.userRole = userRole;
+        this. profileImg = profileImg;
+
+    }
+
+
     // 프로필 정보 업데이트 메서드
     public void updateProfile(ProfileRequestDto requestDto) {
         if (requestDto.getUpdateNickName() != null) {
@@ -60,5 +75,10 @@ public class Users {
     public void updatePassword(ProfileRequestDto requestDto, PasswordEncoder passwordEncoder) {
         // 비밀번호를 인코딩하여 저장
         this.password = passwordEncoder.encode(requestDto.getUpdatePassword());
+    }
+
+    public Users kakaoIdUpdate(Long kakaoId) {
+        this.kakaoId = kakaoId;
+        return this;
     }
 }
