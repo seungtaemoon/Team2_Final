@@ -4,14 +4,17 @@ import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
+import com.sparta.team2project.commons.jwt.JwtUtil;
 import com.sparta.team2project.email.EmailService;
 import com.sparta.team2project.email.ValidNumber.ValidNumber;
 import com.sparta.team2project.email.ValidNumber.ValidNumberRepository;
 import com.sparta.team2project.email.dto.ValidNumberRequestDto;
 import com.sparta.team2project.profile.Profile;
 import com.sparta.team2project.profile.ProfileRepository;
+import com.sparta.team2project.users.dto.LoginRequestDto;
 import com.sparta.team2project.users.dto.SignoutRequestDto;
 import com.sparta.team2project.users.dto.SignupRequestDto;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -32,6 +35,7 @@ public class UserService {
     private final ProfileRepository profileRepository;
     private final EmailService emailService;
     private final ValidNumberRepository validNumberRepository;
+    private final JwtUtil jwtUtil;
 
     // ADMIN_TOKEN
     @Value("${ADMIN_TOKEN}")
@@ -150,4 +154,19 @@ public class UserService {
         return ResponseEntity.ok(new MessageResponseDto("회원탈퇴 완료", HttpStatus.OK.value()));
     }
 
+    public ResponseEntity<MessageResponseDto> login(LoginRequestDto requestDto, HttpServletResponse response) {
+        Users users = userRepository.findByEmail(requestDto.getEmail()).orElseThrow(() ->
+                new CustomException(ErrorCode.ID_NOT_FOUND)); // 이메일 여부 확인
+        if(!passwordEncoder.matches(requestDto.getPassword(), users.getPassword())){
+            throw new CustomException(ErrorCode.PASSWORD_NOT_MATCH); // 해당 이메일의 비번이 맞는지 확인
+        }
+        String accessToken = jwtUtil.createToken(users.getEmail(), users.getUserRole()); // 토큰 생성
+
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, accessToken); // 생성된 토큰 헤더에 넣기
+
+
+        return ResponseEntity.ok(new MessageResponseDto("로그인 성공",HttpServletResponse.SC_OK));
+    }
+
 }
+
