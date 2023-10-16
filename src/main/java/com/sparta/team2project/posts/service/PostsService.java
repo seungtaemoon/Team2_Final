@@ -122,6 +122,13 @@ public class PostsService {
         return new SliceImpl<>(getPostResponseDto(postsPage.getContent()), pageable, postsPage.hasNext());
     }
 
+    // 사용자별 게시글 전체 조회
+    public List<PostResponseDto> getUserPosts(Users users) {
+
+        List<Posts> postsList = postsRepository.findByUsersOrderByModifiedAtDesc(users);
+        return getPostResponseDto(postsList);
+    }
+
 
     // 키워드 검색
     public List<PostResponseDto> getKeywordPosts(String keyword){

@@ -50,6 +50,13 @@ public class PostsController {
         return ResponseEntity.ok(postsService.getAllPosts(page,size));
     }
 
+    // 사용자별 게시글 전체 조회
+    @Operation(summary = "사용자별 게시글 전체 조회 ", description = "사용자별 게시글 전체 조회 api 입니다.")
+    @GetMapping("/user/posts")
+    public ResponseEntity<List<PostResponseDto>> getUserPosts(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(postsService.getUserPosts(userDetails.getUsers()));
+    }
+
     // 게시물 검색 조회
     @Operation(summary = "게시글 검색 조회 ", description = "키워드로 게시글 검색 조회  api 입니다.")
     @GetMapping("/search")
