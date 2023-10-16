@@ -14,10 +14,12 @@ import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.users.Users;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,10 +40,12 @@ public class CommentsService {
 
         return new MessageResponseDto ("댓글을 작성하였습니다", 200);
     }
-
     // 댓글 조회
-    public List<CommentsResponseDto> commentsList(Long postId) {
-        List<Comments> commentsList = commentsRepository.findByPosts_IdOrderByCreatedAtDesc(postId);
+    public Slice<CommentsResponseDto> commentsList(Long postId,
+                                                   Pageable pageable) {
+
+        Slice<Comments> commentsList = commentsRepository.findByPosts_IdOrderByCreatedAtDesc(postId, pageable);
+
         if (commentsList.isEmpty()) {
             throw new CustomException(ErrorCode.POST_NOT_EXIST); // 존재하지 않는 게시글입니다
         }
@@ -51,25 +55,28 @@ public class CommentsService {
         for (Comments comments : commentsList) {
             commentsResponseDtoList.add(new CommentsResponseDto(comments, comments.getNickname()));
         }
-        return commentsResponseDtoList;
+
+        return new SliceImpl<>(commentsResponseDtoList, pageable, commentsList.hasNext());
     }
 
    // 마이페이지에서 내가 쓴 댓글 조회
-    public List<CommentsMeResponseDto> commentsMeList (Long postId,
-                                                       Users users) {
-        List<Comments> commentsMeList = commentsRepository.findByPosts_IdOrderByCreatedAtDesc(postId);
+    public Slice<CommentsMeResponseDto> commentsMeList (Long postId,
+                                                        Users users,
+                                                        Pageable pageable) {
+
+        Slice<Comments> commentsMeList = commentsRepository.findByPosts_IdAndEmailOrderByCreatedAtDesc(postId, users.getEmail(), pageable);
+
         if (commentsMeList.isEmpty()) {
             throw new CustomException(ErrorCode.POST_NOT_EXIST); // 존재하지 않는 게시글입니다
         }
 
-        List<CommentsMeResponseDto> commentsMeResponseDtoList = new ArrayList<>();
-        for (Comments comments : commentsMeList) {
+        List<CommentsMeResponseDto> CommentsMeResponseDtoList = new ArrayList<>();
 
-            if (users.getEmail().equals(comments.getEmail())) {
-                    commentsMeResponseDtoList.add(new CommentsMeResponseDto(comments, comments.getPosts().getTitle(), comments.getNickname()));
-                }
+        for (Comments comments : commentsMeList) {
+            CommentsMeResponseDtoList.add(new CommentsMeResponseDto(comments, comments.getPosts().getTitle(), comments.getNickname()));
         }
-        return commentsMeResponseDtoList;
+
+        return new SliceImpl<>(CommentsMeResponseDtoList, pageable, commentsMeList.hasNext());
     }
 
     // 댓글 수정
