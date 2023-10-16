@@ -46,8 +46,8 @@ public class PostsController {
     // 게시글 전체 조회
     @Operation(summary = "게시글 전체 조회 ", description = "게시글 전체 조회 api 입니다.")
     @GetMapping("/posts")
-    public ResponseEntity<Slice<PostResponseDto>> getAllPosts(@PageableDefault Pageable pageable) {
-        return ResponseEntity.ok(postsService.getAllPosts(pageable));
+    public ResponseEntity<Slice<PostResponseDto>> getAllPosts(@RequestParam int page,@RequestParam int size) {
+        return ResponseEntity.ok(postsService.getAllPosts(page,size));
     }
 
     // 게시물 검색 조회

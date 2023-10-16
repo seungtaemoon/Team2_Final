@@ -42,7 +42,7 @@ public class Schedules {
     @JoinColumn(name="tripDate_id")
     private TripDate tripDate;
 
-    public Schedules(TripDate tripDate, Schedules schedules) {
+    public Schedules(TripDate tripDate, SchedulesRequestDto schedules) {
         this.tripDate = tripDate;
         this.schedulesCategory=schedules.getSchedulesCategory();
 //        this.endTime=schedules.getEndTime();

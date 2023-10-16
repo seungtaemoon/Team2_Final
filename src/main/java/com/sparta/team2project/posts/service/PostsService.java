@@ -8,6 +8,7 @@ import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.replies.entity.Replies;
 import com.sparta.team2project.replies.repository.RepliesRepository;
+import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
 import com.sparta.team2project.tripdate.entity.TripDate;
 import com.sparta.team2project.tripdate.repository.TripDateRepository;
 import com.sparta.team2project.posts.dto.*;
@@ -24,10 +25,7 @@ import com.sparta.team2project.users.UserRepository;
 import com.sparta.team2project.users.Users;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,8 +67,8 @@ public class PostsService {
             tripDateRepository.save(tripDate); // tripDate 저장
 
             List<Schedules>schedulesList=new ArrayList<>();
-            for(Schedules schedules: tripDateRequestDto.getSchedulesList()) {
-                schedules = new Schedules(tripDate,schedules);
+            for(SchedulesRequestDto schedulesDto: tripDateRequestDto.getSchedulesList()) {
+                Schedules schedules = new Schedules(tripDate,schedulesDto);
                 schedulesList.add(schedules);
             }
             schedulesRepository.saveAll(schedulesList);
@@ -117,7 +115,8 @@ public class PostsService {
     }
 
     // 게시글 전체 조회
-    public Slice<PostResponseDto> getAllPosts(Pageable pageable) {
+    public Slice<PostResponseDto> getAllPosts(int page,int size) {
+        Pageable pageable = PageRequest.of(page,size);
         Page<Posts> postsPage = postsRepository.findAllByOrderByModifiedAtDesc(pageable);
 
         return new SliceImpl<>(getPostResponseDto(postsPage.getContent()), pageable, postsPage.hasNext());
