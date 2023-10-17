@@ -74,12 +74,9 @@ public class PostsService {
         posts.viewCount();// 조회수 증가 시키는 메서드
         int commentNum = commentsRepository.countByPosts(posts); // 댓글 세는 메서드
 
-        List<Tags> tag = tagsRepository.findByPosts(posts); // 해당 게시물 관련 태그 조회
+        List<Tags> tags = tagsRepository.findByPosts(posts); // 해당 게시물 관련 태그 조회
 
-        List<String> tagsList = new ArrayList<>();
-        for (Tags tags:tag){
-            tagsList.add(tags.getPurpose());
-        }
+
 //    ---------------------------------------------------
 //        List<Comments> commentsList = commentsRepository.findByPostsOrderByCreatedAtDesc(posts); // 해당 게시글의 댓글 조회
 //        List<PostDetailResponseDto>totalCommentRepliesDto = new ArrayList<>(); // response로 반환할 객체 리스트
@@ -101,9 +98,8 @@ public class PostsService {
 //            totalCommentRepliesDto.add(dto);
 //        }
 //---------------------------------------
-        return new PostResponseDto(posts,posts.getUsers(),tagsList,commentNum,posts.getModifiedAt());
+        return new PostResponseDto(posts,posts.getUsers(),tags,commentNum,posts.getModifiedAt());
     }
-
 
     // 게시글 전체 조회
     public Slice<PostResponseDto> getAllPosts(int page,int size) {
@@ -119,7 +115,17 @@ public class PostsService {
         Users existUser = checkUser(users); // 사용자 조회
         List<Posts> postsList = postsRepository.findByUsersOrderByCreatedAtDesc(existUser);
 
-        return getPostResponseDto(postsList);
+        List<PostResponseDto> postResponseDtoList = new ArrayList<>();
+        for (Posts posts : postsList) {
+
+            int commentNum = commentsRepository.countByPosts(posts); // 댓글 세는 메서드
+
+            List<Tags> tags = tagsRepository.findByPosts(posts);
+            List<TripDate> tripDateList = tripDateRepository.findByPosts(posts);
+
+            postResponseDtoList.add(new PostResponseDto(posts,tags,posts.getUsers(),commentNum,tripDateList));
+        }
+        return postResponseDtoList;
     }
 
 
@@ -272,12 +278,8 @@ public class PostsService {
             int commentNum = commentsRepository.countByPosts(posts); // 댓글 세는 메서드
 
             List<Tags> tag = tagsRepository.findByPosts(posts);
-            List<String> tagsList = new ArrayList<>();
 
-            for (Tags tags:tag){
-                tagsList.add(tags.getPurpose());
-            }
-            postResponseDtoList.add(new PostResponseDto(posts,tagsList,posts.getUsers(),commentNum));
+            postResponseDtoList.add(new PostResponseDto(posts,tag,posts.getUsers(),commentNum));
         }
         return postResponseDtoList;
     }
