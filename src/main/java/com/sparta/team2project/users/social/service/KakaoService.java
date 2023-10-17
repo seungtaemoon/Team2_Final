@@ -13,6 +13,7 @@ import com.sparta.team2project.users.social.dto.TokenDto;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.UUID;
 
-@Slf4j(topic = "KAKAO Login")
+@Slf4j(topic = "Kakao Login")
 @Service
 @RequiredArgsConstructor
 public class KakaoService {
@@ -36,6 +37,13 @@ public class KakaoService {
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
 
+    @Value("${kakaoClientId}")
+    private String kakaoClientId;
+    @Value("${kakaoClientSecret}")
+    private String kakaoClientSecret;
+    @Value("${kakaoRedirectUri}")
+    private String kakaoRedirectUri;
+
     public TokenDto kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
         // 1. "인가 코드"로 "액세스 토큰" 요청
         String accessAuthorizationToken = getToken(code);
@@ -43,15 +51,10 @@ public class KakaoService {
         KakaoUserInfoDto kakaoUserInfo = getKakaoUserInfo(accessAuthorizationToken);
         // 3. 필요시에 회원가입
         Users kakaoUser = registerKakaoUserIfNeeded(kakaoUserInfo);
-
         // 4. JWT 토큰 반환
         String accessToken = jwtUtil.createToken(kakaoUser.getEmail(), kakaoUser.getUserRole());
-//        String refreshToken = jwtUtil.createToken(kakaoUser.getEmail(), kakaoUser.getRole(), "Refresh");
-//        System.out.println("token dto 나오는지8");
-
 
         response.setHeader(JwtUtil.AUTHORIZATION_HEADER, accessToken);
-//        response.setHeader(JwtUtil.REFRESH_HEADER, refreshToken);
 
         return new TokenDto(accessToken);
     }
@@ -72,9 +75,9 @@ public class KakaoService {
         // HTTP Body 생성
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
-        body.add("client_id", "bd488c05020ad8c00735f6a7867961b4");
-        body.add("client_secret", "BzgGUX4YABLiSe9qKgupDND53e9jyao2");
-        body.add("redirect_uri", "http://localhost:8080/kakao/callback");
+        body.add("client_id", kakaoClientId);
+        body.add("client_secret", kakaoClientSecret);
+        body.add("redirect_uri", kakaoRedirectUri);
         body.add("code", code);
 
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
@@ -93,7 +96,7 @@ public class KakaoService {
         return jsonNode.get("access_token").asText();
     }
 
-    private KakaoUserInfoDto getKakaoUserInfo(String accessAuthorizationToken) throws JsonProcessingException {
+    private KakaoUserInfoDto getKakaoUserInfo(String accessToken) throws JsonProcessingException {
         // 요청 URL 만들기
         URI uri = UriComponentsBuilder
                 .fromUriString("https://kapi.kakao.com")
@@ -104,7 +107,7 @@ public class KakaoService {
 
         // HTTP Header 생성
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + accessAuthorizationToken);
+        headers.add("Authorization", "Bearer " + accessToken);
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
@@ -144,7 +147,6 @@ public class KakaoService {
                     kakaoUser = kakaoUser.kakaoIdUpdate(kakaoId);
                 } else {
                     // 신규 회원가입
-                    // password: random UUID
                     String password = UUID.randomUUID().toString();
                     String encodedPassword = passwordEncoder.encode(password);
 
@@ -152,16 +154,12 @@ public class KakaoService {
                     String email = kakaoUserInfo.getEmail();
 
                     kakaoUser = new Users(kakaoUserInfo.getNickname(), encodedPassword, email, UserRoleEnum.USER, kakaoId);
-
                 }
-
                 userRepository.save(kakaoUser);
             }
         }catch(Exception e){
             throw new RuntimeException(e+"카카오 저장오류");
         }
-
         return kakaoUser;
     }
-
 }
