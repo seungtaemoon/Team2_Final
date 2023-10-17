@@ -6,22 +6,19 @@ import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
-import com.sparta.team2project.replies.entity.Replies;
-import com.sparta.team2project.replies.repository.RepliesRepository;
-import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
-import com.sparta.team2project.tripdate.entity.TripDate;
-import com.sparta.team2project.tripdate.repository.TripDateRepository;
 import com.sparta.team2project.posts.dto.*;
 import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.postslike.entity.PostsLike;
 import com.sparta.team2project.postslike.repository.PostsLikeRepository;
+import com.sparta.team2project.replies.repository.RepliesRepository;
 import com.sparta.team2project.schedules.entity.Schedules;
 import com.sparta.team2project.schedules.repository.SchedulesRepository;
 import com.sparta.team2project.tags.entity.Tags;
 import com.sparta.team2project.tags.repository.TagsRepository;
+import com.sparta.team2project.tripdate.entity.TripDate;
+import com.sparta.team2project.tripdate.repository.TripDateRepository;
 import com.sparta.team2project.users.UserRepository;
-
 import com.sparta.team2project.users.Users;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +26,10 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -42,11 +41,10 @@ public class PostsService {
     private final PostsLikeRepository postsLikeRepository;
     private final UserRepository usersRepository;
     private final CommentsRepository commentsRepository;
-    private final RepliesRepository repliesRepository;
     private final TagsRepository tagsRepository;
 
     // 게시글 생성
-    public MessageResponseDto createPost(TotalRequestDto totalRequestDto,Users users) {
+    public PostMessageResponseDto createPost(TotalRequestDto totalRequestDto,Users users) {
 
         Users existUser = checkUser(users); // 사용자 조회
 
@@ -65,15 +63,8 @@ public class PostsService {
         for(TripDateRequestDto tripDateRequestDto : tripDateRequestDtoList){
             TripDate tripDate = new TripDate(tripDateRequestDto,posts);
             tripDateRepository.save(tripDate); // tripDate 저장
-
-            List<Schedules>schedulesList=new ArrayList<>();
-            for(SchedulesRequestDto schedulesDto: tripDateRequestDto.getSchedulesList()) {
-                Schedules schedules = new Schedules(tripDate,schedulesDto);
-                schedulesList.add(schedules);
-            }
-            schedulesRepository.saveAll(schedulesList);
         }
-        return new MessageResponseDto("게시글이 등록 되었습니다.", HttpServletResponse.SC_OK);
+        return new PostMessageResponseDto("게시글이 등록 되었습니다.", HttpServletResponse.SC_OK,posts);
     }
 
     // 단일 게시물 조회
@@ -117,7 +108,7 @@ public class PostsService {
     // 게시글 전체 조회
     public Slice<PostResponseDto> getAllPosts(int page,int size) {
         Pageable pageable = PageRequest.of(page,size);
-        Page<Posts> postsPage = postsRepository.findAllByOrderByModifiedAtDesc(pageable);
+        Page<Posts> postsPage = postsRepository.findAllByOrderByCreatedAtDesc(pageable);
 
         return new SliceImpl<>(getPostResponseDto(postsPage.getContent()), pageable, postsPage.hasNext());
     }
@@ -125,7 +116,7 @@ public class PostsService {
     // 사용자별 게시글 전체 조회
     public List<PostResponseDto> getUserPosts(Users users) {
 
-        List<Posts> postsList = postsRepository.findByUsersOrderByModifiedAtDesc(users);
+        List<Posts> postsList = postsRepository.findByUsersOrderByCreatedAtDesc(users);
         return getPostResponseDto(postsList);
     }
 
@@ -159,8 +150,8 @@ public class PostsService {
 
         List<Posts> postsList = new ArrayList<>(postsSet); //Set-> List로 바꿔줌
 
-        // modifiedAt 기준으로 내림차순 정렬
-        postsList.sort(Comparator.comparing(Posts::getModifiedAt).reversed());
+        // createdAtAt 기준으로 내림차순 정렬
+        postsList.sort(Comparator.comparing(Posts::getCreatedAt).reversed());
 
         return getPostResponseDto(postsList);
 
@@ -169,8 +160,8 @@ public class PostsService {
     // 랭킹 목록 조회(상위 3개)
     public List<PostResponseDto> getRankPosts() {
 
-        // 상위 3개 게시물 가져오기 (좋아요 수 겹칠 시 modifiedAt 내림차순으로 정렬)
-        List<Posts> postsList = postsRepository.findFirst3ByOrderByLikeNumDescModifiedAtDesc();
+        // 상위 3개 게시물 가져오기 (좋아요 수 겹칠 시 createdAt 내림차순으로 정렬)
+        List<Posts> postsList = postsRepository.findFirst3ByOrderByLikeNumDescCreatedAtDesc();
         return getPostResponseDto(postsList);
     }
 

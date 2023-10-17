@@ -11,5 +11,4 @@ import java.util.List;
 public class TripDateRequestDto {
     private LocalDate chosenDate;
     private String subTitle;
-    private List<SchedulesRequestDto> schedulesList;
 }

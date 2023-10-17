@@ -3,12 +3,14 @@ package com.sparta.team2project.schedules.controller;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
+import com.sparta.team2project.schedules.dto.CreateSchedulesRequestDto;
 import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
 import com.sparta.team2project.schedules.dto.SchedulesResponseDto;
 import com.sparta.team2project.schedules.service.SchedulesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +21,15 @@ import org.springframework.web.bind.annotation.*;
 public class SchedulesController {
     private final SchedulesService schedulesService;
 
-    // 세부일정 생성
-    @Operation(summary = "여행 일정 생성", description = "여행 일정 생성 api 입니다.")
+    //세부 일정 생성
+    @Operation(summary = "날짜별 세부일정 생성 ", description = "날짜별 세부일정 생성 api 입니다.")
+    @PostMapping("/schedules/{tripDateId}")
+    public ResponseEntity<MessageResponseDto> createSchedules(@PathVariable("tripDateId") Long tripDateId, @RequestBody CreateSchedulesRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return ResponseEntity.ok(schedulesService.createSchedules(tripDateId,requestDto,userDetails.getUsers()));
+    }
+
+    // 세부일정 조회
+    @Operation(summary = "여행 일정 조회", description = "여행 일정 조회 api 입니다.")
     @GetMapping("/schedules/{schedulesId}")
     public SchedulesResponseDto getSchedules(@PathVariable("schedulesId") Long schedulesId
     ) {
