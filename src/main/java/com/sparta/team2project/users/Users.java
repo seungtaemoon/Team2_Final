@@ -50,15 +50,12 @@ public class Users {
     }
 
 
-    public Users(Long kakaoId, String email, String password, String nickName, UserRoleEnum userRole, String profileImg) {
-//        this.username = username;
-        this.kakaoId =kakaoId;
+    public Users(String email, String password, String nickName, UserRoleEnum userRole, Long kakaoId) {
         this.email = email;
         this.password = password;
         this.nickName = nickName;
         this.userRole = userRole;
-        this. profileImg = profileImg;
-
+        this.kakaoId =kakaoId;
     }
 
 
