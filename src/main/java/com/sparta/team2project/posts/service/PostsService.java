@@ -11,7 +11,6 @@ import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.postslike.entity.PostsLike;
 import com.sparta.team2project.postslike.repository.PostsLikeRepository;
-import com.sparta.team2project.replies.repository.RepliesRepository;
 import com.sparta.team2project.schedules.entity.Schedules;
 import com.sparta.team2project.schedules.repository.SchedulesRepository;
 import com.sparta.team2project.tags.entity.Tags;
@@ -102,8 +101,9 @@ public class PostsService {
 //            totalCommentRepliesDto.add(dto);
 //        }
 //---------------------------------------
-        return new PostResponseDto(posts,posts.getUsers(),tagsList,commentNum);
+        return new PostResponseDto(posts,posts.getUsers(),tagsList,commentNum,posts.getModifiedAt());
     }
+
 
     // 게시글 전체 조회
     public Slice<PostResponseDto> getAllPosts(int page,int size) {
@@ -116,7 +116,9 @@ public class PostsService {
     // 사용자별 게시글 전체 조회
     public List<PostResponseDto> getUserPosts(Users users) {
 
-        List<Posts> postsList = postsRepository.findByUsersOrderByCreatedAtDesc(users);
+        Users existUser = checkUser(users); // 사용자 조회
+        List<Posts> postsList = postsRepository.findByUsersOrderByCreatedAtDesc(existUser);
+
         return getPostResponseDto(postsList);
     }
 
@@ -163,6 +165,22 @@ public class PostsService {
         // 상위 3개 게시물 가져오기 (좋아요 수 겹칠 시 createdAt 내림차순으로 정렬)
         List<Posts> postsList = postsRepository.findFirst3ByOrderByLikeNumDescCreatedAtDesc();
         return getPostResponseDto(postsList);
+    }
+
+    // 사용자가 좋아요 누른 게시물 조회
+    public List<PostResponseDto> getUserLikePosts(Users users) {
+
+        Users existUser = checkUser(users); // 사용자 조회
+        List<PostsLike> userLikePosts = postsLikeRepository.findByUsers(existUser);
+
+        List<Posts> postsList = new ArrayList<>();
+        userLikePosts.stream()
+                .map(PostsLike::getPosts)
+                .forEach(postsList::add);
+
+        postsList.sort(Comparator.comparing(Posts::getCreatedAt).reversed());
+
+        return getLikePostResponse(postsList);
     }
 
     // 게시글 좋아요 및 좋아요 취소
@@ -260,6 +278,16 @@ public class PostsService {
                 tagsList.add(tags.getPurpose());
             }
             postResponseDtoList.add(new PostResponseDto(posts,tagsList,posts.getUsers(),commentNum));
+        }
+        return postResponseDtoList;
+    }
+
+    // 사용자가 누른 게시글들 관련 반환 시 사용 메서드
+    private List<PostResponseDto> getLikePostResponse(List<Posts> postsList) {
+        List<PostResponseDto> postResponseDtoList = new ArrayList<>();
+        for(Posts posts:postsList){
+
+            postResponseDtoList.add(new PostResponseDto(posts,posts.getUsers()));
         }
         return postResponseDtoList;
     }

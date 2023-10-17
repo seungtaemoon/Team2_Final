@@ -7,8 +7,6 @@ import com.sparta.team2project.users.Users;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,17 +17,17 @@ public class PostResponseDto {
 
     private final Long postId;
     private final String title;
-    private final List<String> tagsList;
     private final String contents;
     private final String nickName;
-    private final int likeNum;
-    private final int viewNum;
-    private final PostCategory postCategory;
-    private final int commentNum;
     private final LocalDateTime createdAt;
+    private List<String> tagsList;
+    private Integer likeNum;
+    private Integer viewNum;
+    private PostCategory postCategory;
+    private Integer commentNum;
     private LocalDateTime modifiedAt;
-    //private List<PostDetailResponseDto> commentList;
 
+     // 전체 게시글 관련 반환시
     public PostResponseDto(Posts posts, List<String> tagsList,Users users,int commentNum){
         this.postId = posts.getId();
         this.title = posts.getTitle();
@@ -42,8 +40,8 @@ public class PostResponseDto {
         this.postCategory = posts.getPostCategory();
         this.createdAt = posts.getCreatedAt();
     }
-
-    public PostResponseDto(Posts posts, Users users,List<String> tagsList,int commentNum){
+    // 상세 게시글 관련 반환시
+    public PostResponseDto(Posts posts, Users users, List<String> tagsList, int commentNum, LocalDateTime modifiedAt){
         this.postId = posts.getId();
         this.title = posts.getTitle();
         this.tagsList = tagsList;
@@ -54,9 +52,15 @@ public class PostResponseDto {
         this.commentNum = commentNum;
         this.postCategory = posts.getPostCategory();
         this.createdAt = posts.getCreatedAt();
-        this.modifiedAt = posts.getModifiedAt();
-        //this.commentList = dtoList;
+        this.modifiedAt = modifiedAt;
     }
 
-
+    // 사용자가 누른 게시물 관련 반환시
+    public PostResponseDto(Posts posts,Users users){
+        this.postId = posts.getId();
+        this.title = posts.getTitle();
+        this.contents = posts.getContents();
+        this.nickName = users.getNickName();
+        this.createdAt = posts.getCreatedAt();
+    }
 }
