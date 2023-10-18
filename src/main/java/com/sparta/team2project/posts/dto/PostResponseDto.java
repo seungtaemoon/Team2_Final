@@ -29,6 +29,7 @@ public class PostResponseDto {
     private PostCategory postCategory;
     private Integer commentNum;
     private LocalDateTime modifiedAt;
+    private List<Long> tripDateIdList;
     private List<String> subTitleList;
     private List<String> chosenDateList;
 
@@ -81,6 +82,7 @@ public class PostResponseDto {
         this.commentNum = commentNum;
         this.postCategory = posts.getPostCategory();
         this.createdAt = posts.getCreatedAt();
+        this.tripDateIdList = tripDateList.stream().map(TripDate::getId).toList();
         this.subTitleList = tripDateList.stream().map(TripDate::getSubTitle).toList();
         this.chosenDateList = tripDateList.stream().map(TripDate::getChosenDate).map(LocalDate::toString).toList();
     }
