@@ -48,6 +48,11 @@ public class PicturesController {
         return picturesService.getPictures(schedulesId);
     }
 
+    @GetMapping("/pictures/{picturesId}")
+    public PicturesResponseDto getPicture(@PathVariable("picturesId") Long picturesId){
+        return picturesService.getPicture(picturesId);
+    }
+
     @DeleteMapping("/pictures/{picturesId}")
     public MessageResponseDto deletePictures(@PathVariable("picturesId") Long picturesId,
                                                    @AuthenticationPrincipal UserDetailsImpl userDetails

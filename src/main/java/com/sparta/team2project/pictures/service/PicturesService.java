@@ -130,6 +130,33 @@ public class PicturesService {
         return uploadResponseDto;
     }
 
+    public PicturesResponseDto getPicture(Long picturesId) {
+        try {
+            // 1. 파일을 찾아 열기
+            Pictures pictures = picturesRepository.findById(picturesId).orElseThrow(
+                    () -> new CustomException(ErrorCode.ID_NOT_MATCH)
+            );
+            S3Object s3Object = amazonS3Client.getObject(bucket, pictures.getPicturesName());
+            S3ObjectInputStream s3ObjectInputStream = s3Object.getObjectContent();
+            FileOutputStream fileOutputStream = new FileOutputStream(new File(pictures.getPicturesName()));
+            byte[] read_buf = new byte[1024];
+            int read_len = 0;
+            while((read_len = s3ObjectInputStream.read(read_buf)) > 0){
+                fileOutputStream.write(read_buf, 0, read_len);
+            }
+            s3ObjectInputStream.close();
+            fileOutputStream.close();
+            // 2. 사진 파일 정보(Pictures) 반환
+            return new PicturesResponseDto(pictures);
+        } catch (AmazonServiceException e){
+            throw new AmazonServiceException(e.getErrorMessage());
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public MessageResponseDto deletePictures(Long picturesId, Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users);         // 권한 확인
@@ -159,4 +186,6 @@ public class PicturesService {
             throw new CustomException(ErrorCode.NOT_ALLOWED);
         }
     }
+
+
 }
