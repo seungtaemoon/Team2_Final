@@ -28,7 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -49,14 +51,28 @@ public class PicturesService {
         return fileDetail;
     }
 
+    // 사진 등록
     public UploadResponseDto uploadPictures(Long schedulesId, List<MultipartFile> files, Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users);         // 권한 확인
-        // 파일 등록
-        try {
-                List<Pictures> picturesList = new ArrayList<>();
-                List<PicturesResponseDto> picturesResponseDtoList = new ArrayList<>(3);
-                for(MultipartFile file: files){
+        // 기 존재하는 사진이 있는지 확인
+        Schedules checkSchedules = schedulesRepository.findById(schedulesId).orElseThrow(
+                () -> new CustomException(ErrorCode.ID_NOT_MATCH)
+        );
+        List<Pictures> checkPicturesList = checkSchedules.getPicturesList();
+        List<PicturesResponseDto> picturesResponseDtoList = new ArrayList<>(3);
+        // 기존 데이터의 사진들이 없으면 dummy값을 넣어 초기화
+        if(checkPicturesList.isEmpty()){
+            for(int i = 0; i < 3; i++){
+                Pictures pictures = new Pictures(checkSchedules, "a", "a", "a", 0L);
+                checkPicturesList.add(pictures);
+            }
+        }
+        // 기존 데이터의 사진이 있으면 null값인 것들에 대해서만 사진을 등록
+        int alreadyPictureCount = 0;
+        for(int i = 0; i < checkPicturesList.size(); i++){
+                if(checkPicturesList.get(i).getPictureSize() == 0L){
+                    MultipartFile file = files.get(i);
                     // 1. 파일 정보를 picturesResponseDtoList에 저장
                     String picturesName = file.getOriginalFilename();
                     String picturesURL = "https://" + bucket + "/" + picturesName;
@@ -70,27 +86,31 @@ public class PicturesService {
                             () -> new CustomException(ErrorCode.ID_NOT_MATCH)
                     );
                     Pictures pictures = new Pictures(schedules, picturesURL, picturesName, pictureContentType, pictureSize);
-                    picturesList.add(pictures);
+                    checkPicturesList.set(i, pictures);
                     // 3. 사진을 메타데이터 및 정보와 함께 S3에 저장
                     ObjectMetadata metadata = new ObjectMetadata();
                     metadata.setContentType(file.getContentType());
                     metadata.setContentLength(file.getSize());
-                    amazonS3Client.putObject(bucket, picturesName, file.getInputStream(), metadata);
+                    try {
+                        amazonS3Client.putObject(bucket, picturesName, file.getInputStream(), metadata);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-                // 4. Repository에 Pictures리스트를 저장
-                picturesRepository.saveAll(picturesList);
-                // 5. 성공 메시지 DTO와 함께 picturesResponseDtoList를 반환
-                MessageResponseDto messageResponseDto = new MessageResponseDto("아래 파일들이 등록되었습니다.", 200);
-                UploadResponseDto uploadResponseDto = new UploadResponseDto(picturesResponseDtoList, messageResponseDto);
-                return uploadResponseDto;
+                else{
+                    alreadyPictureCount++;
+                    if(alreadyPictureCount == checkPicturesList.size()){
+                        throw new CustomException(ErrorCode.EXCEED_PICTURES_LIMIT);
+                    }
+                }
         }
-        // 실패시 예외 처리
-        catch (IOException e) {
-            e.printStackTrace();
-            throw new CustomException(ErrorCode.S3_NOT_UPLOAD);
-        }
-
+        // 4. Repository에 Pictures리스트를 저장
+        picturesRepository.saveAll(checkPicturesList);// 5. 성공 메시지 DTO와 함께 picturesResponseDtoList를 반환
+        MessageResponseDto messageResponseDto = new MessageResponseDto("아래 파일들이 등록되었습니다.", 200);
+        UploadResponseDto uploadResponseDto = new UploadResponseDto(picturesResponseDtoList, messageResponseDto);
+        return uploadResponseDto;
     }
+
 
     public UploadResponseDto getPictures(Long schedulesId) {
         // 1. Schedules 객체를 찾아 연결된 Pictures 불러오기

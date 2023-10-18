@@ -2,6 +2,7 @@ package com.sparta.team2project.schedules.entity;
 
 import com.sparta.team2project.pictures.entity.Pictures;
 import com.sparta.team2project.schedules.dto.SchedulesRequestDto;
+import com.sparta.team2project.schedules.dto.SchedulesResponseDto;
 import com.sparta.team2project.tripdate.entity.TripDate;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,6 +10,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -47,7 +50,7 @@ public class Schedules {
 
     // 사진모음(Pictures)와 양방향 관계
     @OneToMany(mappedBy = "schedules", cascade = {CascadeType.REMOVE})
-    private List<Pictures> picturesList = new ArrayList<>();
+    private List<Pictures> picturesList = new ArrayList<>(3);
 
     public Schedules(TripDate tripDate, Schedules schedules) {
         this.tripDate = tripDate;
@@ -61,6 +64,19 @@ public class Schedules {
 //        this.details= schedules.getDetails();
         this.referenceURL = schedules.getReferenceURL();
         this.picturesList = schedules.getPicturesList();
+    }
+
+    public Schedules(TripDate tripDate, SchedulesRequestDto requestDto){
+        this.tripDate = tripDate;
+        this.schedulesCategory=requestDto.getSchedulesCategory();
+//        this.endTime=schedules.getEndTime();
+//        this.startTime=schedules.getStartTime();
+        this.timeSpent = requestDto.getTimeSpent();
+        this.costs=requestDto.getCosts();
+        this.contents=requestDto.getContents();
+        this.placeName=requestDto.getPlaceName();
+//        this.details= schedules.getDetails();
+        this.referenceURL = requestDto.getReferenceURL();
     }
 
     // DTO로 직접 업데이트

@@ -2,9 +2,7 @@ package com.sparta.team2project.posts.controller;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
-import com.sparta.team2project.posts.dto.PostResponseDto;
-import com.sparta.team2project.posts.dto.TotalRequestDto;
-import com.sparta.team2project.posts.dto.UpdateRequestDto;
+import com.sparta.team2project.posts.dto.*;
 import com.sparta.team2project.posts.service.PostsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +19,8 @@ public class PostsController {
     private final PostsService postsService;
 
     @PostMapping("/posts") // 게시글 생성
-    public ResponseEntity<MessageResponseDto> createPost(@RequestBody TotalRequestDto totalRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return ResponseEntity.ok(postsService.createPost(totalRequestDto,userDetails.getUsers()));
+    public PostMessageResponseDto createPost(@RequestBody TotalRequestDto totalRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return postsService.createPost(totalRequestDto,userDetails.getUsers());
     }
 
     @GetMapping("/posts/{postId}") // 단일 게시물 조회

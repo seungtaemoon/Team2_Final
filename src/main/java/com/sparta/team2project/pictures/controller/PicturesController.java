@@ -34,7 +34,7 @@ public class PicturesController {
                                             @AuthenticationPrincipal UserDetailsImpl userDetails
                                             ){
         // 업로드할 사진이 3개를 초과하면 예외 출력
-        if(files.size() > 3 ){
+        if(files.size() > 3){
             throw new CustomException(ErrorCode.EXCEED_PICTURES_LIMIT);
         }
         // 그 외의 경우 업로드 수행
