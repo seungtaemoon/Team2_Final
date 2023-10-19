@@ -48,7 +48,7 @@ public class PostsService {
     private final TagsRepository tagsRepository;
 
     // 게시글 생성
-    public MessageResponseDto createPost(TotalRequestDto totalRequestDto,Users users) {
+    public PostMessageResponseDto createPost(TotalRequestDto totalRequestDto,Users users) {
 
         Users existUser = checkUser(users); // 사용자 조회
 
@@ -63,19 +63,14 @@ public class PostsService {
                 .map(tag -> new Tags(tag, posts))
                 .forEach(tagsRepository::save); // tags 저장
 
+        List<Long> idList = new ArrayList<>();// tripDateID 담는 리스트
         List<TripDateRequestDto> tripDateRequestDtoList = totalRequestDto.getTripDateList();
         for(TripDateRequestDto tripDateRequestDto : tripDateRequestDtoList){
             TripDate tripDate = new TripDate(tripDateRequestDto,posts);
             tripDateRepository.save(tripDate); // tripDate 저장
-
-            List<Schedules>schedulesList=new ArrayList<>();
-            for(Schedules schedules: tripDateRequestDto.getSchedulesList()) {
-                schedules = new Schedules(tripDate,schedules);
-                schedulesList.add(schedules);
-            }
-            schedulesRepository.saveAll(schedulesList);
+            idList.add(tripDate.getId());
         }
-        return new MessageResponseDto("게시글이 등록 되었습니다.", HttpServletResponse.SC_OK);
+        return new PostMessageResponseDto("게시글이 등록 되었습니다.", HttpServletResponse.SC_OK,posts,idList);
     }
 
     // 단일 게시물 조회
