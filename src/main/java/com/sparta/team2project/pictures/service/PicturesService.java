@@ -9,12 +9,11 @@ import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
-import com.sparta.team2project.pictures.dto.PictureDeleteResponseDto;
+import com.sparta.team2project.pictures.dto.PicturesMessageResponseDto;
 import com.sparta.team2project.pictures.dto.PicturesResponseDto;
 import com.sparta.team2project.pictures.dto.UploadResponseDto;
 import com.sparta.team2project.pictures.entity.Pictures;
 import com.sparta.team2project.pictures.repository.PicturesRepository;
-import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.s3.AmazonS3ResourceStorage;
 import com.sparta.team2project.s3.FileDetail;
 import com.sparta.team2project.schedules.entity.Schedules;
@@ -23,14 +22,11 @@ import com.sparta.team2project.users.UserRepository;
 import com.sparta.team2project.users.Users;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -160,6 +156,41 @@ public class PicturesService {
         }
     }
 
+    public PicturesMessageResponseDto updatePictures(Long schedulesId, MultipartFile file, Users users) {
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users);         // 권한 확인
+        Schedules schedules = schedulesRepository.findById(schedulesId).orElseThrow(
+                () -> new CustomException(ErrorCode.ID_NOT_MATCH));
+        List<Pictures> picturesList = schedules.getPicturesList();
+        // 기 등록된 사진이 이미 3개 인지 검사해서 이미 3개 일 경우, 예외 메시지 출력
+        if(picturesList.size() == 3){
+            throw new CustomException(ErrorCode.EXCEED_PICTURES_LIMIT);
+        }
+        // 아닐 경우 요청된 사진 입력
+        else{
+            String picturesName = file.getOriginalFilename();
+            String picturesURL = "https://" + bucket + "/" + picturesName;
+            String pictureContentType = file.getContentType();
+            Long pictureSize = file.getSize();  // 단위: KBytes
+            PicturesResponseDto picturesResponseDto = new PicturesResponseDto(
+                    schedulesId, picturesURL, picturesName, pictureContentType, pictureSize);
+            Pictures pictures = new Pictures(schedules, picturesURL, picturesName, pictureContentType, pictureSize);
+            picturesRepository.save(pictures);
+            // 3. 사진을 메타데이터 및 정보와 함께 S3에 저장
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType(file.getContentType());
+            metadata.setContentLength(file.getSize());
+            try {
+                amazonS3Client.putObject(bucket, picturesName, file.getInputStream(), metadata);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            MessageResponseDto messageResponseDto = new MessageResponseDto("사진이 업데이트 되었습니다.", 200);
+            PicturesMessageResponseDto picturesMessageResponseDto = new PicturesMessageResponseDto(picturesResponseDto, messageResponseDto);
+            return picturesMessageResponseDto;
+        }
+    }
+
     public MessageResponseDto deletePictures(Long picturesId, Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users);         // 권한 확인
@@ -189,6 +220,4 @@ public class PicturesService {
             throw new CustomException(ErrorCode.NOT_ALLOWED);
         }
     }
-
-
 }

@@ -1,24 +1,18 @@
 package com.sparta.team2project.pictures.controller;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
-import com.sparta.team2project.pictures.dto.PictureDeleteResponseDto;
+import com.sparta.team2project.pictures.dto.PicturesMessageResponseDto;
 import com.sparta.team2project.pictures.dto.PicturesResponseDto;
 import com.sparta.team2project.pictures.dto.UploadResponseDto;
 import com.sparta.team2project.pictures.service.PicturesService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -52,6 +46,15 @@ public class PicturesController {
     public PicturesResponseDto getPicture(@PathVariable("picturesId") Long picturesId){
         return picturesService.getPicture(picturesId);
     }
+
+    @PutMapping("/schedules/{schedulesId}/pictures")
+    public PicturesMessageResponseDto updatePictures(@PathVariable("schedulesId") Long schedulesId,
+                                                     @RequestParam("file") MultipartFile file,
+                                                     @AuthenticationPrincipal UserDetailsImpl userDetails
+                                          ){
+        return picturesService.updatePictures(schedulesId, file, userDetails.getUsers());
+    }
+
 
     @DeleteMapping("/pictures/{picturesId}")
     public MessageResponseDto deletePictures(@PathVariable("picturesId") Long picturesId,
