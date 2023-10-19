@@ -5,7 +5,8 @@ import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.profile.dto.PasswordRequestDto;
-import com.sparta.team2project.profile.dto.ProfileRequestDto;
+import com.sparta.team2project.profile.dto.ProfileImgRequestDto;
+import com.sparta.team2project.profile.dto.ProfileNickNameRequestDto;
 import com.sparta.team2project.profile.dto.ProfileResponseDto;
 import com.sparta.team2project.users.UserRepository;
 import com.sparta.team2project.users.Users;
@@ -32,16 +33,32 @@ public class ProfileService {
         return ResponseEntity.ok(responseDto);
     }
 
-    // 마이페이지 수정하기(닉네임, 프로필이미지)
+    // 마이페이지 수정하기(닉네임)
     @Transactional
-    public ResponseEntity<MessageResponseDto> updateProfile(ProfileRequestDto requestDto, Users users) {
+    public ResponseEntity<MessageResponseDto> updateNickName(ProfileNickNameRequestDto requestDto, Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users); //권한 확인
         Profile findProfile = checkProfile(users); // 마이페이지 찾기
 
 
-        //닉네임, 프로필이미지 업데이트
-        findProfile.getUsers().updateProfile(requestDto);
+        //닉네임 업데이트
+        findProfile.getUsers().updateNickName(requestDto);
+        profileRepository.save(findProfile);
+
+        MessageResponseDto responseDto = new MessageResponseDto("마이페이지 수정 성공", 200);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    // 마이페이지 수정하기(프로필이미지)
+    @Transactional
+    public ResponseEntity<MessageResponseDto> updateProfileImg(ProfileImgRequestDto requestDto, Users users) {
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users); //권한 확인
+        Profile findProfile = checkProfile(users); // 마이페이지 찾기
+
+
+        //프로필이미지 업데이트
+        findProfile.getUsers().updateProfileImg(requestDto);
         profileRepository.save(findProfile);
 
         MessageResponseDto responseDto = new MessageResponseDto("마이페이지 수정 성공", 200);
