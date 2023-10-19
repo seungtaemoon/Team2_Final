@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "세부 여행 일정 관련 API", description = "세부 여행 일정 관련 API")
@@ -21,20 +23,26 @@ import org.springframework.web.bind.annotation.*;
 public class SchedulesController {
     private final SchedulesService schedulesService;
 
-    //세부 일정 생성
-    @Operation(summary = "날짜별 세부일정 생성 ", description = "날짜별 세부일정 생성 api 입니다.")
-    @PostMapping("/schedules/{tripDateId}")
-    public ResponseEntity<MessageResponseDto> createSchedules(@PathVariable("tripDateId") Long tripDateId, @RequestBody CreateSchedulesRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return ResponseEntity.ok(schedulesService.createSchedules(tripDateId,requestDto,userDetails.getUsers()));
-    }
 
+
+    // 세부일정 생성
+    @Operation(summary = "여행 일정 생성", description = "여행 일정 생성 api 입니다.")
+    @PostMapping("/tripDate/{tripDateId}/schedules")
+    public MessageResponseDto createSchedules(@PathVariable("tripDateId") Long tripDateId,
+                                                              @RequestBody CreateSchedulesRequestDto requestDtoList,
+                                                              @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return schedulesService.createSchedules(tripDateId,requestDtoList,userDetails.getUsers());
+    }
+  
     // 세부일정 조회
-    @Operation(summary = "여행 일정 조회", description = "여행 일정 조회 api 입니다.")
+    @Operation(summary = "여행 일정 조희", description = "여행 일정 조회 api 입니다.")
     @GetMapping("/schedules/{schedulesId}")
     public SchedulesResponseDto getSchedules(@PathVariable("schedulesId") Long schedulesId
     ) {
         return schedulesService.getSchedules(schedulesId);
     }
+
+    // 세부일정 수정
     @Operation(summary = "여행 일정 수정", description = "여행 일정 수정 api 입니다.")
     @PutMapping("/schedules/{schedulesId}")
     public SchedulesResponseDto updateSchedules(@PathVariable("schedulesId") Long schedulesId,
@@ -43,6 +51,8 @@ public class SchedulesController {
     ) {
         return schedulesService.updateSchedules(schedulesId, userDetails.getUsers(), schedulesRequestDto);
     }
+
+    // 세부일정 삭제
     @Operation(summary = "여행 일정 삭제", description = "여행 일정 삭제 api 입니다.")
     @DeleteMapping("/schedules/{schedulesId}")
     public MessageResponseDto deleteSchedules(@PathVariable("schedulesId") Long schedulesId,
