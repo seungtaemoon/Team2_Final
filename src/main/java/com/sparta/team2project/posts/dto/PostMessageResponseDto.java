@@ -1,6 +1,5 @@
 package com.sparta.team2project.posts.dto;
 
-
 import com.sparta.team2project.posts.entity.Posts;
 import lombok.Getter;
 
@@ -20,3 +19,5 @@ public class PostMessageResponseDto {
         this.statusCode = statusCode;
     }
 }
+
+

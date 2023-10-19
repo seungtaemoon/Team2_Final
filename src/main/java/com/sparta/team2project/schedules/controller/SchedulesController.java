@@ -23,6 +23,8 @@ import java.util.List;
 public class SchedulesController {
     private final SchedulesService schedulesService;
 
+
+
     // 세부일정 생성
     @Operation(summary = "여행 일정 생성", description = "여행 일정 생성 api 입니다.")
     @PostMapping("/tripDate/{tripDateId}/schedules")

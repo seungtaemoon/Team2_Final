@@ -28,7 +28,7 @@ public class Schedules {
     @Column(name = "scheduleCategory", nullable = false)
     private SchedulesCategory schedulesCategory;
     // 비용
-    @Column(name = "costs", nullable = false)
+    @Column(name = "costs",nullable = false)
     private int costs;
     // 관광지 이름
     @Column(name = "placeName", nullable = false)
@@ -48,11 +48,13 @@ public class Schedules {
     @JoinColumn(name="tripDate_id")
     private TripDate tripDate;
 
+
     // 사진모음(Pictures)와 양방향 관계
     @OneToMany(mappedBy = "schedules", cascade = {CascadeType.REMOVE})
     private List<Pictures> picturesList = new ArrayList<>(3);
 
     public Schedules(TripDate tripDate, Schedules schedules) {
+
         this.tripDate = tripDate;
         this.schedulesCategory=schedules.getSchedulesCategory();
 //        this.endTime=schedules.getEndTime();

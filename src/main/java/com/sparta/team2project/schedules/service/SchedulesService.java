@@ -31,7 +31,8 @@ public class SchedulesService {
     private final UserRepository userRepository;
     private final TripDateRepository tripDateRepository;
 
-    // schedules 생성 메서드
+
+   
     // schedules 생성 메서드
     public MessageResponseDto  createSchedules(Long tripDateId, CreateSchedulesRequestDto requestDto, Users users) {
         TripDate tripDate = tripDateRepository.findById(tripDateId).
@@ -50,6 +51,7 @@ public class SchedulesService {
         return new MessageResponseDto("일정이 등록 되었습니다.", HttpServletResponse.SC_OK);
 
     }
+
 
     // Schedules 조회 메서드 (권한 확인 없음)
     public SchedulesResponseDto getSchedules(Long schedulesId) {
@@ -96,6 +98,5 @@ public class SchedulesService {
         MessageResponseDto messageResponseDto = new MessageResponseDto("삭제가 되었습니다.", 200);
         return messageResponseDto;
     }
-
 
 }

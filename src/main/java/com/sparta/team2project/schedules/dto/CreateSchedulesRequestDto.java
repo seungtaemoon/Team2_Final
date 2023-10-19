@@ -8,3 +8,4 @@ import java.util.List;
 public class CreateSchedulesRequestDto {
     private List<SchedulesRequestDto> schedulesList;
 }
+
