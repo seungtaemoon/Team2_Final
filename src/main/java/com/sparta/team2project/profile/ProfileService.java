@@ -58,11 +58,11 @@ public class ProfileService {
         // 현재 비밀번호 확인
         String currentPassword = requestDto.getCurrentPassword();
         if (!passwordEncoder.matches(currentPassword, findProfile.getUsers().getPassword())) {
-            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+            throw new CustomException(ErrorCode.CURRENT_PASSWORD_NOT_MATCH);
         }
         // 수정할 비밀번호가 현재 비밀번호와 같은 경우
         if (requestDto.getUpdatePassword().equals(requestDto.getCurrentPassword())) {
-            throw new IllegalArgumentException("현재 비밀번호와 바꾸려는 비밀번호가 같습니다.");
+            throw new CustomException(ErrorCode.SAME_PASSWORD);
         }
 
         // 새로운 비밀번호 업데이트
@@ -72,7 +72,7 @@ public class ProfileService {
         findProfile.getUsers().updatePassword(requestDto, passwordEncoder);
         profileRepository.save(findProfile);
 
-        MessageResponseDto responseDto = new MessageResponseDto("비밀번호 수정 성공", 200);
+        MessageResponseDto responseDto = new MessageResponseDto("내 정보 수정 완료", 200);
         return ResponseEntity.ok(responseDto);
     }
 
