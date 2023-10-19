@@ -11,7 +11,6 @@ import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.postslike.entity.PostsLike;
 import com.sparta.team2project.postslike.repository.PostsLikeRepository;
-import com.sparta.team2project.schedules.entity.Schedules;
 import com.sparta.team2project.schedules.repository.SchedulesRepository;
 import com.sparta.team2project.tags.entity.Tags;
 import com.sparta.team2project.tags.repository.TagsRepository;
@@ -36,7 +35,6 @@ import java.util.Set;
 public class PostsService {
     private final PostsRepository postsRepository;
     private final TripDateRepository tripDateRepository;
-    private final SchedulesRepository schedulesRepository;
     private final PostsLikeRepository postsLikeRepository;
     private final UserRepository usersRepository;
     private final CommentsRepository commentsRepository;
@@ -78,39 +76,18 @@ public class PostsService {
 
         List<Tags> tags = tagsRepository.findByPosts(posts); // 해당 게시물 관련 태그 조회
 
-
-//    ---------------------------------------------------
-//        List<Comments> commentsList = commentsRepository.findByPostsOrderByCreatedAtDesc(posts); // 해당 게시글의 댓글 조회
-//        List<PostDetailResponseDto>totalCommentRepliesDto = new ArrayList<>(); // response로 반환할 객체 리스트
-//
-//        for(Comments comments:commentsList){
-//            List<ReplyResponseDto> repliesAboutList = new ArrayList<>(); // commentsID별 replies 객체에 대한 필드 담을 리스트
-//
-//            List<Replies> repliesList = repliesRepository.findAllByCommentsOrderByCreatedAtDesc(comments);// 해당 댓글 관련 replies 객체가 들어있는 리스트
-//            for(Replies replies:repliesList){ // replies 객체 하나씩 빼옴
-//                String contents = replies.getContents();
-//                String nickName = replies.getNickname();
-//                LocalDateTime createdAt = replies.getCreatedAt();
-//                LocalDateTime modifiedAt = replies.getModifiedAt();
-//
-//                ReplyResponseDto replyResponseDto = new ReplyResponseDto(contents,nickName,createdAt,modifiedAt);
-//                repliesAboutList.add(replyResponseDto);
-//            }
-//            PostDetailResponseDto dto = new PostDetailResponseDto(comments.getContents(),comments.getNickname(),comments.getCreatedAt(),comments.getModifiedAt(),repliesAboutList);
-//            totalCommentRepliesDto.add(dto);
-//        }
-//---------------------------------------
         return new PostResponseDto(posts,posts.getUsers(),tags,commentNum,posts.getModifiedAt());
     }
 
     // 게시글 전체 조회
     public Slice<PostResponseDto> getAllPosts(int page,int size) {
+
         Pageable pageable = PageRequest.of(page,size);
-        Page<Posts> postsPage = postsRepository.findAllByOrderByCreatedAtDesc(pageable);
+        Page<Posts> postsPage = postsRepository.findAllPosts(pageable);
 
-        return new SliceImpl<>(getPostResponseDto(postsPage.getContent()), pageable, postsPage.hasNext());
+        List<PostResponseDto> postResponseDtos = getPostResponseDto(postsPage.getContent());
+        return new SliceImpl<>(postResponseDtos, pageable, postsPage.hasNext());
     }
-
 
     // 사용자별 게시글 전체 조회
     public List<PostResponseDto> getUserPosts(Users users) {
@@ -131,7 +108,6 @@ public class PostsService {
         return postResponseDtoList;
     }
 
-
     // 키워드 검색
     public List<PostResponseDto> getKeywordPosts(String keyword){
 
@@ -140,20 +116,8 @@ public class PostsService {
         }
 
         // 중복을 방지하기 위한 Set 사용
-        Set<Posts> postsSet = postsRepository.findByTitleContaining(keyword);
-        Set<Tags> tagsSet = tagsRepository.findByPurposeContaining(keyword);
-        Set<Schedules> schedulesSet = schedulesRepository.findByPlaceNameContainingOrContentsContaining(keyword,keyword);
+        Set<Posts> postsSet = postsRepository.SearchKeyword(keyword);
 
-        // Tags에서 Posts를 가져와서 추가
-        tagsSet.stream()
-                .map(Tags::getPosts) // Posts타입으로 변환
-                .forEach(postsSet::add); // 하나씩 postsList에 삽입
-
-        // Schedules에서 Posts를 가져와서 추가
-        schedulesSet.stream()
-                .map(Schedules::getTripDate) // TripDate타입으로 변환
-                .map(TripDate::getPosts)  // Posts타입으로 변환
-                .forEach(postsSet::add); // 하나씩 postsList에 삽입
 
         if (postsSet.isEmpty()) {
             throw new CustomException(ErrorCode.POST_NOT_EXIST);
