@@ -61,49 +61,32 @@ public class PicturesService {
         );
         List<Pictures> checkPicturesList = checkSchedules.getPicturesList();
         List<PicturesResponseDto> picturesResponseDtoList = new ArrayList<>(3);
-        // 기존 데이터의 사진들이 없으면 dummy값을 넣어 초기화
-        if(checkPicturesList.isEmpty()){
-            for(int i = 0; i < 3; i++){
-                Pictures pictures = new Pictures(checkSchedules, "a", "a", "a", 0L);
-                checkPicturesList.add(pictures);
+        // 1. 파일 정보를 picturesResponseDtoList에 저장
+        for (MultipartFile file : files) {
+            String picturesName = file.getOriginalFilename();
+            String picturesURL = "https://" + bucket + "/" + picturesName;
+            String pictureContentType = file.getContentType();
+            Long pictureSize = file.getSize();  // 단위: KBytes
+            PicturesResponseDto picturesResponseDto = new PicturesResponseDto(
+                    schedulesId, picturesURL, picturesName, pictureContentType, pictureSize);
+            picturesResponseDtoList.add(picturesResponseDto);
+            // 2. Repository에 파일 정보를 저장하기 위해 PicturesList에 저장(schedulesId 필요)
+            Schedules schedules = schedulesRepository.findById(schedulesId).orElseThrow(
+                    () -> new CustomException(ErrorCode.ID_NOT_MATCH)
+            );
+            Pictures pictures = new Pictures(schedules, picturesURL, picturesName, pictureContentType, pictureSize);
+            checkPicturesList.add(pictures);
+            // 3. 사진을 메타데이터 및 정보와 함께 S3에 저장
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType(file.getContentType());
+            metadata.setContentLength(file.getSize());
+            try {
+                amazonS3Client.putObject(bucket, picturesName, file.getInputStream(), metadata);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
-        // 기존 데이터의 사진이 있으면 null값인 것들에 대해서만 사진을 등록
-        int alreadyPictureCount = 0;
-        for(int i = 0; i < checkPicturesList.size(); i++){
-                if(checkPicturesList.get(i).getPictureSize() == 0L){
-                    MultipartFile file = files.get(i);
-                    // 1. 파일 정보를 picturesResponseDtoList에 저장
-                    String picturesName = file.getOriginalFilename();
-                    String picturesURL = "https://" + bucket + "/" + picturesName;
-                    String pictureContentType = file.getContentType();
-                    Long pictureSize = file.getSize();  // 단위: KBytes
-                    PicturesResponseDto picturesResponseDto = new PicturesResponseDto(
-                            schedulesId, picturesURL, picturesName, pictureContentType, pictureSize);
-                    picturesResponseDtoList.add(picturesResponseDto);
-                    // 2. Repository에 파일 정보를 저장하기 위해 PicturesList에 저장(schedulesId 필요)
-                    Schedules schedules = schedulesRepository.findById(schedulesId).orElseThrow(
-                            () -> new CustomException(ErrorCode.ID_NOT_MATCH)
-                    );
-                    Pictures pictures = new Pictures(schedules, picturesURL, picturesName, pictureContentType, pictureSize);
-                    checkPicturesList.set(i, pictures);
-                    // 3. 사진을 메타데이터 및 정보와 함께 S3에 저장
-                    ObjectMetadata metadata = new ObjectMetadata();
-                    metadata.setContentType(file.getContentType());
-                    metadata.setContentLength(file.getSize());
-                    try {
-                        amazonS3Client.putObject(bucket, picturesName, file.getInputStream(), metadata);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                else{
-                    alreadyPictureCount++;
-                    if(alreadyPictureCount == checkPicturesList.size()){
-                        throw new CustomException(ErrorCode.EXCEED_PICTURES_LIMIT);
-                    }
-                }
-        }
+
         // 4. Repository에 Pictures리스트를 저장
         picturesRepository.saveAll(checkPicturesList);// 5. 성공 메시지 DTO와 함께 picturesResponseDtoList를 반환
         MessageResponseDto messageResponseDto = new MessageResponseDto("아래 파일들이 등록되었습니다.", 200);
@@ -120,7 +103,7 @@ public class PicturesService {
         // 2. 불러온 Pictures의 리스트를 DTO의 리스트로 변환
         List<Pictures> picturesList = schedules.getPicturesList();
         List<PicturesResponseDto> picturesResponseDtoList = new ArrayList<>(3);
-        for(Pictures pictures: picturesList){
+        for (Pictures pictures : picturesList) {
             // 3. 파일 불러오기
             try {
                 S3Object s3Object = amazonS3Client.getObject(bucket, pictures.getPicturesName());
@@ -128,12 +111,12 @@ public class PicturesService {
                 FileOutputStream fileOutputStream = new FileOutputStream(new File(pictures.getPicturesName()));
                 byte[] read_buf = new byte[1024];
                 int read_len = 0;
-                while((read_len = s3ObjectInputStream.read(read_buf)) > 0){
+                while ((read_len = s3ObjectInputStream.read(read_buf)) > 0) {
                     fileOutputStream.write(read_buf, 0, read_len);
                 }
                 s3ObjectInputStream.close();
                 fileOutputStream.close();
-            } catch (AmazonServiceException e){
+            } catch (AmazonServiceException e) {
                 throw new AmazonServiceException(e.getErrorMessage());
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e.getMessage());
@@ -161,14 +144,14 @@ public class PicturesService {
             FileOutputStream fileOutputStream = new FileOutputStream(new File(pictures.getPicturesName()));
             byte[] read_buf = new byte[1024];
             int read_len = 0;
-            while((read_len = s3ObjectInputStream.read(read_buf)) > 0){
+            while ((read_len = s3ObjectInputStream.read(read_buf)) > 0) {
                 fileOutputStream.write(read_buf, 0, read_len);
             }
             s3ObjectInputStream.close();
             fileOutputStream.close();
             // 2. 사진 파일 정보(Pictures) 반환
             return new PicturesResponseDto(pictures);
-        } catch (AmazonServiceException e){
+        } catch (AmazonServiceException e) {
             throw new AmazonServiceException(e.getErrorMessage());
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -183,9 +166,9 @@ public class PicturesService {
         Pictures pictures = picturesRepository.findById(picturesId).orElseThrow(
                 () -> new CustomException(ErrorCode.ID_NOT_MATCH)
         );
-        try{
+        try {
             amazonS3Client.deleteObject(bucket, pictures.getPicturesName());
-        } catch (AmazonServiceException e){
+        } catch (AmazonServiceException e) {
             throw new AmazonServiceException(e.getErrorMessage());
         }
         picturesRepository.delete(pictures);
@@ -194,15 +177,15 @@ public class PicturesService {
     }
 
     // 사용자 조회 메서드
-    private Users checkUser (Users users) {
+    private Users checkUser(Users users) {
         return userRepository.findByEmail(users.getEmail()).
                 orElseThrow(() -> new CustomException(ErrorCode.ID_NOT_MATCH));
 
     }
 
     // ADMIN 권한 및 이메일 일치여부 메서드
-    private void checkAuthority(Users existUser,Users users){
-        if (!existUser.getUserRole().equals(UserRoleEnum.ADMIN)&&!existUser.getEmail().equals(users.getEmail())) {
+    private void checkAuthority(Users existUser, Users users) {
+        if (!existUser.getUserRole().equals(UserRoleEnum.ADMIN) && !existUser.getEmail().equals(users.getEmail())) {
             throw new CustomException(ErrorCode.NOT_ALLOWED);
         }
     }
