@@ -4,10 +4,7 @@ import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
-import com.sparta.team2project.profile.dto.PasswordRequestDto;
-import com.sparta.team2project.profile.dto.ProfileImgRequestDto;
-import com.sparta.team2project.profile.dto.ProfileNickNameRequestDto;
-import com.sparta.team2project.profile.dto.ProfileResponseDto;
+import com.sparta.team2project.profile.dto.*;
 import com.sparta.team2project.users.UserRepository;
 import com.sparta.team2project.users.Users;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +24,9 @@ public class ProfileService {
     public ResponseEntity<ProfileResponseDto> getProfile(Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users); //권한 확인
+        Profile findProfile = checkProfile(users); // 마이페이지 찾기
 
-        ProfileResponseDto responseDto = new ProfileResponseDto(checkUser(users));
+        ProfileResponseDto responseDto = new ProfileResponseDto(checkUser(users), checkProfile(users));
 
         return ResponseEntity.ok(responseDto);
     }
@@ -93,6 +91,18 @@ public class ProfileService {
         return ResponseEntity.ok(responseDto);
     }
 
+    // 마이페이지 수정하기 (자기소개)
+    public ResponseEntity<MessageResponseDto> updateAboutMe(AboutMeRequestDto requestDto, Users users) {
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users); //권한 확인
+        Profile findProfile = checkProfile(users); // 마이페이지 찾기
+
+        findProfile.updateAboutMe(requestDto);
+        profileRepository.save(findProfile);
+
+        MessageResponseDto responseDto = new MessageResponseDto("내 정보 수정 완료", 200);
+        return ResponseEntity.ok(responseDto);
+    }
 
     // 사용자 확인 메서드
     private Users checkUser(Users users) {
@@ -113,4 +123,6 @@ public class ProfileService {
                 .orElseThrow(() -> new CustomException(ErrorCode.PROFILE_NOT_EXIST));
 
     }
+
+
 }

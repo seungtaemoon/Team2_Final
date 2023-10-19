@@ -1,5 +1,6 @@
 package com.sparta.team2project.profile;
 
+import com.sparta.team2project.profile.dto.AboutMeRequestDto;
 import com.sparta.team2project.users.Users;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -19,10 +20,16 @@ public class Profile {
     @JoinColumn(name = "users_id")
     private Users users;
 
-
-        public Profile(Users users) {
+    public Profile(Users users) {
         this.users = users;
+    }
 
+    // 자기소개
+    @Column(nullable = true)
+    private String aboutMe;
+
+    public void updateAboutMe(AboutMeRequestDto requestDto) {
+        this.aboutMe = requestDto.getAboutMe();
     }
 }
 

@@ -2,12 +2,10 @@ package com.sparta.team2project.profile;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
-import com.sparta.team2project.profile.dto.PasswordRequestDto;
-import com.sparta.team2project.profile.dto.ProfileImgRequestDto;
-import com.sparta.team2project.profile.dto.ProfileNickNameRequestDto;
-import com.sparta.team2project.profile.dto.ProfileResponseDto;
+import com.sparta.team2project.profile.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -49,5 +47,11 @@ public class ProfileController {
     public ResponseEntity<MessageResponseDto> updatePassword(@RequestBody PasswordRequestDto requestDto,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return profileService.updatePassword(requestDto, userDetails.getUsers());
+    }
+    @Operation(summary = "마이 페이지 프로필 자기소개", description = "마이 페이지 자기소개 수정 api 입니다.")
+    @PutMapping("/update-aboutMe")
+    public ResponseEntity<MessageResponseDto> updateAboutMe(@Valid @RequestBody AboutMeRequestDto requestDto,
+                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return profileService.updateAboutMe(requestDto, userDetails.getUsers());
     }
 }
