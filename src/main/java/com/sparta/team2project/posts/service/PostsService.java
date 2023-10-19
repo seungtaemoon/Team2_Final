@@ -24,6 +24,10 @@ import com.sparta.team2project.users.UserRepository;
 import com.sparta.team2project.users.Users;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,9 +53,9 @@ public class PostsService {
         Users existUser = checkUser(users); // 사용자 조회
 
         Posts posts = new Posts(totalRequestDto.getContents(),
-                                totalRequestDto.getTitle(),
-                                totalRequestDto.getPostCategory(),
-                                existUser);
+                totalRequestDto.getTitle(),
+                totalRequestDto.getPostCategory(),
+                existUser);
         postsRepository.save(posts);  //posts 저장
 
         List<String> tagsList = totalRequestDto.getTagsList();
@@ -83,41 +87,43 @@ public class PostsService {
         for (Tags tags:tag){
             tagsList.add(tags.getPurpose());
         }
-        List<Comments> commentsList = commentsRepository.findByPostsOrderByCreatedAtDesc(posts); // 해당 게시글의 댓글 조회
-
-        List<PostDetailResponseDto>totalCommentRepliesDto = new ArrayList<>(); // response로 반환할 객체 리스트
-
-        for(Comments comments:commentsList){
-            List<ReplyResponseDto> repliesAboutList = new ArrayList<>(); // commentsID별 replies 객체에 대한 필드 담을 리스트
-
-            List<Replies> repliesList = repliesRepository.findAllByCommentsOrderByCreatedAtDesc(comments);// 해당 댓글 관련 replies 객체가 들어있는 리스트
-            for(Replies replies:repliesList){ // replies 객체 하나씩 빼옴
-                String contents = replies.getContents();
-                String nickName = replies.getNickname();
-                LocalDateTime createdAt = replies.getCreatedAt();
-                LocalDateTime modifiedAt = replies.getModifiedAt();
-
-                ReplyResponseDto replyResponseDto = new ReplyResponseDto(contents,nickName,createdAt,modifiedAt);
-                repliesAboutList.add(replyResponseDto);
-            }
-            PostDetailResponseDto dto = new PostDetailResponseDto(comments.getContents(),comments.getNickname(),comments.getCreatedAt(),comments.getModifiedAt(),repliesAboutList);
-            totalCommentRepliesDto.add(dto);
-        }
-        return new PostResponseDto(posts,posts.getUsers(),tagsList,commentNum,totalCommentRepliesDto);
+//    ---------------------------------------------------
+//        List<Comments> commentsList = commentsRepository.findByPostsOrderByCreatedAtDesc(posts); // 해당 게시글의 댓글 조회
+//        List<PostDetailResponseDto>totalCommentRepliesDto = new ArrayList<>(); // response로 반환할 객체 리스트
+//
+//        for(Comments comments:commentsList){
+//            List<ReplyResponseDto> repliesAboutList = new ArrayList<>(); // commentsID별 replies 객체에 대한 필드 담을 리스트
+//
+//            List<Replies> repliesList = repliesRepository.findAllByCommentsOrderByCreatedAtDesc(comments);// 해당 댓글 관련 replies 객체가 들어있는 리스트
+//            for(Replies replies:repliesList){ // replies 객체 하나씩 빼옴
+//                String contents = replies.getContents();
+//                String nickName = replies.getNickname();
+//                LocalDateTime createdAt = replies.getCreatedAt();
+//                LocalDateTime modifiedAt = replies.getModifiedAt();
+//
+//                ReplyResponseDto replyResponseDto = new ReplyResponseDto(contents,nickName,createdAt,modifiedAt);
+//                repliesAboutList.add(replyResponseDto);
+//            }
+//            PostDetailResponseDto dto = new PostDetailResponseDto(comments.getContents(),comments.getNickname(),comments.getCreatedAt(),comments.getModifiedAt(),repliesAboutList);
+//            totalCommentRepliesDto.add(dto);
+//        }
+//---------------------------------------
+        return new PostResponseDto(posts,posts.getUsers(),tagsList,commentNum);
     }
 
     // 게시글 전체 조회
-    public List<PostResponseDto> getAllPosts() {
+    public Slice<PostResponseDto> getAllPosts(Pageable pageable) {
+        Page<Posts> postsPage = postsRepository.findAllByOrderByModifiedAtDesc(pageable);
 
-        List<Posts> postsList = postsRepository.findAllByOrderByModifiedAtDesc();
-        return getPostResponseDto(postsList);
+        return new SliceImpl<>(getPostResponseDto(postsPage.getContent()), pageable, postsPage.hasNext());
     }
+
 
     // 키워드 검색
     public List<PostResponseDto> getKeywordPosts(String keyword){
 
         if(keyword==null){ // 키워드가 null값인 경우
-            return getAllPosts();
+            throw new CustomException(ErrorCode.POST_NOT_SEARCH);
         }
 
         // 중복을 방지하기 위한 Set 사용

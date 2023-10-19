@@ -28,7 +28,7 @@ public class PostResponseDto {
     private final int commentNum;
     private final LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
-    private List<PostDetailResponseDto> commentList;
+    //private List<PostDetailResponseDto> commentList;
 
     public PostResponseDto(Posts posts, List<String> tagsList,Users users,int commentNum){
         this.postId = posts.getId();
@@ -43,7 +43,7 @@ public class PostResponseDto {
         this.createdAt = posts.getCreatedAt();
     }
 
-    public PostResponseDto(Posts posts, Users users,List<String> tagsList,int commentNum,List<PostDetailResponseDto> dtoList){
+    public PostResponseDto(Posts posts, Users users,List<String> tagsList,int commentNum){
         this.postId = posts.getId();
         this.title = posts.getTitle();
         this.tagsList = tagsList;
@@ -55,7 +55,7 @@ public class PostResponseDto {
         this.postCategory = posts.getPostCategory();
         this.createdAt = posts.getCreatedAt();
         this.modifiedAt = posts.getModifiedAt();
-        this.commentList = dtoList;
+        //this.commentList = dtoList;
     }
 
 
