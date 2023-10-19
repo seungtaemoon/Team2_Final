@@ -1,5 +1,7 @@
 package com.sparta.team2project.commons.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -33,26 +35,23 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
 
-        // *** 이전과 다른부분, 쿠키에서 토큰을 추출하던 것에서 getJwtFromHeader()를 통해 헤더에서 순수한 토큰을 추출하는 것으로 변경 간결해짐.
-        String tokenValue = jwtUtil.getJwtFromHeader(req);
+        String token = jwtUtil.resolveToken(req, JwtUtil.AUTHORIZATION_HEADER);
+        String refresh = jwtUtil.resolveToken(req, JwtUtil.REFRESH_HEADER);
 
-        if (StringUtils.hasText(tokenValue)) {
-
-            if (!jwtUtil.validateToken(tokenValue)) {
-                log.error("Token Error");
-                return;
-            }
-
-            Claims info = jwtUtil.getUserInfoFromToken(tokenValue);
-
-            try {
-                setAuthentication(info.getSubject());
-            } catch (Exception e) {
-                log.error(e.getMessage());
+        if (token != null) {
+            if (!jwtUtil.validateToken(token)) {
+                jwtExceptionHandler(res, "Token Error", HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
         }
-
+        if (refresh != null) {
+            if (jwtUtil.validateToken(refresh)) {
+                // setAuthentication(refresh);
+            } else {
+                jwtExceptionHandler(res, "Refresh Token Error", HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+        }
         filterChain.doFilter(req, res);
     }
 
@@ -69,5 +68,17 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private Authentication createAuthentication(String email) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+    }
+
+    public void jwtExceptionHandler(HttpServletResponse response, String msg, int statusCode) {
+        response.setStatus(statusCode);
+        response.setContentType("application/json");
+        try {
+            String json = new ObjectMapper().writeValueAsString(
+                    new MessageResponseDto(msg, statusCode));
+            response.getWriter().write(json);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 }
