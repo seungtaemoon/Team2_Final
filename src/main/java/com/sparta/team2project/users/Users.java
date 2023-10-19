@@ -1,7 +1,9 @@
 package com.sparta.team2project.users;
 
 import com.sparta.team2project.commons.entity.UserRoleEnum;
-import com.sparta.team2project.profile.dto.ProfileRequestDto;
+import com.sparta.team2project.profile.dto.PasswordRequestDto;
+import com.sparta.team2project.profile.dto.ProfileImgRequestDto;
+import com.sparta.team2project.profile.dto.ProfileNickNameRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -59,17 +61,20 @@ public class Users {
     }
 
 
-    // 프로필 정보 업데이트 메서드
-    public void updateProfile(ProfileRequestDto requestDto) {
+    // 프로필 정보 업데이트 (닉네임)
+    public void updateNickName(ProfileNickNameRequestDto requestDto) {
         if (requestDto.getUpdateNickName() != null) {
             this.nickName = requestDto.getUpdateNickName();
         }
+    }
+    // 프로필 정보 업데이트 (프로필이미지)
+    public void updateProfileImg(ProfileImgRequestDto requestDto) {
         if (requestDto.getUpdateProfileImg() != null) {
             this.profileImg = requestDto.getUpdateProfileImg();
         }
     }
 
-    public void updatePassword(ProfileRequestDto requestDto, PasswordEncoder passwordEncoder) {
+    public void updatePassword(PasswordRequestDto requestDto, PasswordEncoder passwordEncoder) {
         // 비밀번호를 인코딩하여 저장
         this.password = passwordEncoder.encode(requestDto.getUpdatePassword());
     }

@@ -4,8 +4,7 @@ import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
-import com.sparta.team2project.profile.dto.ProfileRequestDto;
-import com.sparta.team2project.profile.dto.ProfileResponseDto;
+import com.sparta.team2project.profile.dto.*;
 import com.sparta.team2project.users.UserRepository;
 import com.sparta.team2project.users.Users;
 import lombok.RequiredArgsConstructor;
@@ -25,22 +24,39 @@ public class ProfileService {
     public ResponseEntity<ProfileResponseDto> getProfile(Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users); //권한 확인
+        Profile findProfile = checkProfile(users); // 마이페이지 찾기
 
-        ProfileResponseDto responseDto = new ProfileResponseDto(checkUser(users));
+        ProfileResponseDto responseDto = new ProfileResponseDto(checkUser(users), checkProfile(users));
 
         return ResponseEntity.ok(responseDto);
     }
 
-    // 마이페이지 수정하기(닉네임, 프로필이미지)
+    // 마이페이지 수정하기(닉네임)
     @Transactional
-    public ResponseEntity<MessageResponseDto> updateProfile(ProfileRequestDto requestDto, Users users) {
+    public ResponseEntity<MessageResponseDto> updateNickName(ProfileNickNameRequestDto requestDto, Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users); //권한 확인
         Profile findProfile = checkProfile(users); // 마이페이지 찾기
 
 
-        //닉네임, 프로필이미지 업데이트
-        findProfile.getUsers().updateProfile(requestDto);
+        //닉네임 업데이트
+        findProfile.getUsers().updateNickName(requestDto);
+        profileRepository.save(findProfile);
+
+        MessageResponseDto responseDto = new MessageResponseDto("마이페이지 수정 성공", 200);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    // 마이페이지 수정하기(프로필이미지)
+    @Transactional
+    public ResponseEntity<MessageResponseDto> updateProfileImg(ProfileImgRequestDto requestDto, Users users) {
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users); //권한 확인
+        Profile findProfile = checkProfile(users); // 마이페이지 찾기
+
+
+        //프로필이미지 업데이트
+        findProfile.getUsers().updateProfileImg(requestDto);
         profileRepository.save(findProfile);
 
         MessageResponseDto responseDto = new MessageResponseDto("마이페이지 수정 성공", 200);
@@ -49,7 +65,7 @@ public class ProfileService {
 
     // 비밀번호 수정하기
     @Transactional
-    public ResponseEntity<MessageResponseDto> updatePassword(ProfileRequestDto requestDto, Users users) {
+    public ResponseEntity<MessageResponseDto> updatePassword(PasswordRequestDto requestDto, Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users); //권한 확인
         Profile findProfile = checkProfile(users); // 마이페이지 찾기
@@ -57,11 +73,11 @@ public class ProfileService {
         // 현재 비밀번호 확인
         String currentPassword = requestDto.getCurrentPassword();
         if (!passwordEncoder.matches(currentPassword, findProfile.getUsers().getPassword())) {
-            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+            throw new CustomException(ErrorCode.CURRENT_PASSWORD_NOT_MATCH);
         }
         // 수정할 비밀번호가 현재 비밀번호와 같은 경우
         if (requestDto.getUpdatePassword().equals(requestDto.getCurrentPassword())) {
-            throw new IllegalArgumentException("현재 비밀번호와 바꾸려는 비밀번호가 같습니다.");
+            throw new CustomException(ErrorCode.SAME_PASSWORD);
         }
 
         // 새로운 비밀번호 업데이트
@@ -71,10 +87,22 @@ public class ProfileService {
         findProfile.getUsers().updatePassword(requestDto, passwordEncoder);
         profileRepository.save(findProfile);
 
-        MessageResponseDto responseDto = new MessageResponseDto("비밀번호 수정 성공", 200);
+        MessageResponseDto responseDto = new MessageResponseDto("내 정보 수정 완료", 200);
         return ResponseEntity.ok(responseDto);
     }
 
+    // 마이페이지 수정하기 (자기소개)
+    public ResponseEntity<MessageResponseDto> updateAboutMe(AboutMeRequestDto requestDto, Users users) {
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users); //권한 확인
+        Profile findProfile = checkProfile(users); // 마이페이지 찾기
+
+        findProfile.updateAboutMe(requestDto);
+        profileRepository.save(findProfile);
+
+        MessageResponseDto responseDto = new MessageResponseDto("내 정보 수정 완료", 200);
+        return ResponseEntity.ok(responseDto);
+    }
 
     // 사용자 확인 메서드
     private Users checkUser(Users users) {
@@ -95,4 +123,6 @@ public class ProfileService {
                 .orElseThrow(() -> new CustomException(ErrorCode.PROFILE_NOT_EXIST));
 
     }
+
+
 }

@@ -12,11 +12,13 @@ public class ProfileResponseDto {
     private String password; //숨겨야하는 값
     private String nickName;
     private String profileImg;
+    private String aboutMe;
 
-    public ProfileResponseDto(Users users) {
+    public ProfileResponseDto(Users users, Profile profile) {
         this.email = users.getEmail();
         this.password = users.getPassword();
         this.nickName = users.getNickName();
         this.profileImg = users.getProfileImg();
+        this.aboutMe = profile.getAboutMe();
     }
 }

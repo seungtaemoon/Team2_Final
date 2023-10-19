@@ -2,10 +2,10 @@ package com.sparta.team2project.profile;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
-import com.sparta.team2project.profile.dto.ProfileRequestDto;
-import com.sparta.team2project.profile.dto.ProfileResponseDto;
+import com.sparta.team2project.profile.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,19 +26,32 @@ public class ProfileController {
         return profileService.getProfile(userDetails.getUsers());
     }
 
-    // 프로필 수정하기(닉네임, 프로필이미지)
-    @Operation(summary = "마이 페이지 프로필 수정(닉네임,프로필사진)", description = "마이 페이지 (닉네임,프로필사진)프로필 수정 api 입니다.")
-    @PutMapping()
-    public ResponseEntity<MessageResponseDto> updateProfile(@RequestBody ProfileRequestDto requestDto,
+    // 프로필 수정하기(닉네임)
+    @Operation(summary = "마이 페이지 프로필 수정(닉네임)", description = "마이 페이지 (닉네임)프로필 수정 api 입니다.")
+    @PutMapping("/update-nickname")
+    public ResponseEntity<MessageResponseDto> updateNickName(@RequestBody ProfileNickNameRequestDto requestDto,
                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return profileService.updateProfile(requestDto, userDetails.getUsers());
+        return profileService.updateNickName(requestDto, userDetails.getUsers());
+    }
+    // 프로필 수정하기(프로필이미지)
+    @Operation(summary = "마이 페이지 프로필 수정(프로필사진)", description = "마이 페이지 (프로필사진)프로필 수정 api 입니다.")
+    @PutMapping("/update-profileImg")
+    public ResponseEntity<MessageResponseDto> updateProfileImg(@RequestBody ProfileImgRequestDto requestDto,
+                                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return profileService.updateProfileImg(requestDto, userDetails.getUsers());
     }
 
     //프로필 수정하기(비밀번호)
     @Operation(summary = "마이 페이지 프로필 수정(비밀번호)", description = "마이 페이지 (비밀번호)프로필 수정 api 입니다.")
     @PutMapping("/update-password")
-    public ResponseEntity<MessageResponseDto> updatePassword(@RequestBody ProfileRequestDto requestDto,
+    public ResponseEntity<MessageResponseDto> updatePassword(@RequestBody PasswordRequestDto requestDto,
                                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return profileService.updatePassword(requestDto, userDetails.getUsers());
+    }
+    @Operation(summary = "마이 페이지 프로필 자기소개", description = "마이 페이지 자기소개 수정 api 입니다.")
+    @PutMapping("/update-aboutMe")
+    public ResponseEntity<MessageResponseDto> updateAboutMe(@Valid @RequestBody AboutMeRequestDto requestDto,
+                                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return profileService.updateAboutMe(requestDto, userDetails.getUsers());
     }
 }
