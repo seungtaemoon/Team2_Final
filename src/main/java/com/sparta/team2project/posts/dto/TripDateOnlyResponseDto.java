@@ -16,6 +16,7 @@ public class TripDateOnlyResponseDto {
     private final Long tripDateId;
     private final LocalDate chosenDate;
 
+
     public TripDateOnlyResponseDto(TripDate tripDate){
         this.tripDateId = tripDate.getId();
         this.chosenDate = tripDate.getChosenDate();
