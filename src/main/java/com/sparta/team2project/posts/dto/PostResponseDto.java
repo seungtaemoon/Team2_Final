@@ -30,7 +30,7 @@ public class PostResponseDto {
     private Integer commentNum;
     private LocalDateTime modifiedAt;
     private List<Long> tripDateIdList;
-    private List<String> subTitleList;
+//    private List<String> subTitleList;
     private List<String> chosenDateList;
 
      // 전체 게시글 관련 반환시
@@ -83,7 +83,7 @@ public class PostResponseDto {
         this.postCategory = posts.getPostCategory();
         this.createdAt = posts.getCreatedAt();
         this.tripDateIdList = tripDateList.stream().map(TripDate::getId).toList();
-        this.subTitleList = tripDateList.stream().map(TripDate::getSubTitle).toList();
+//        this.subTitleList = tripDateList.stream().map(TripDate::getSubTitle).toList();
         this.chosenDateList = tripDateList.stream().map(TripDate::getChosenDate).map(LocalDate::toString).toList();
     }
 }

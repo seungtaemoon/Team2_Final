@@ -28,8 +28,8 @@ public class TripDate {
     @Column(nullable = false)
     private LocalDate chosenDate;
 
-    @Column(nullable = false)
-    private String subTitle;
+//    @Column(nullable = false)
+//    private String subTitle;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "posts_id",nullable = false)
@@ -41,13 +41,13 @@ public class TripDate {
     public TripDate(TripDateRequestDto tripDateRequestDto, Posts posts) {
         this.chosenDate = tripDateRequestDto.getChosenDate();
         this.posts = posts;
-        this.subTitle = tripDateRequestDto.getSubTitle();
+//        this.subTitle = tripDateRequestDto.getSubTitle();
         //this.schedulesList = tripDateRequestDto.getSchedulesList();
 
     }
 
     public void updateTripDate(TripDateOnlyRequestDto tripDateOnlyRequestDto){
         this.chosenDate = tripDateOnlyRequestDto.getChosenDate();
-        this.subTitle = tripDateOnlyRequestDto.getSubTitle();
+//        this.subTitle = tripDateOnlyRequestDto.getSubTitle();
     }
 }
