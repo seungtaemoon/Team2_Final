@@ -31,6 +31,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 @Service
 @RequiredArgsConstructor
@@ -73,7 +74,7 @@ public class ProfileService {
 
     // 마이페이지 수정하기(프로필이미지)
     @Transactional
-    public ProfileImgResponseDto updateProfileImg(MultipartFile file, Users users) {
+    public String updateProfileImg(MultipartFile file, Users users) {
         // 1. 권한 확인
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users); //권한 확인
@@ -108,7 +109,14 @@ public class ProfileService {
                 pictureSize
                 );
 
-        return profileImgResponseDto;
+        return picturesURL;
+    }
+
+    public String readProfileImg(Long userId, Users users) {
+        String filename = users.getProfileImg().substring(users.getProfileImg().lastIndexOf("/") + 1);
+        URL url = amazonS3Client.getUrl(bucket, filename);
+        String urlText = "" + url;
+        return urlText;
     }
 
     @Transactional
@@ -204,6 +212,7 @@ public class ProfileService {
                 .orElseThrow(() -> new CustomException(ErrorCode.PROFILE_NOT_EXIST));
 
     }
+
 
 
 }
