@@ -11,7 +11,6 @@ import com.sparta.team2project.posts.entity.Posts;
 import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.postslike.entity.PostsLike;
 import com.sparta.team2project.postslike.repository.PostsLikeRepository;
-import com.sparta.team2project.schedules.repository.SchedulesRepository;
 import com.sparta.team2project.tags.entity.Tags;
 import com.sparta.team2project.tags.repository.TagsRepository;
 import com.sparta.team2project.tripdate.entity.TripDate;
@@ -24,6 +23,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -48,6 +48,7 @@ public class PostsService {
         Posts posts = new Posts(totalRequestDto.getContents(),
                 totalRequestDto.getTitle(),
                 totalRequestDto.getPostCategory(),
+                totalRequestDto.getSubTitle(),
                 existUser);
         postsRepository.save(posts);  //posts 저장
 
@@ -57,8 +58,8 @@ public class PostsService {
                 .forEach(tagsRepository::save); // tags 저장
 
         List<Long> idList = new ArrayList<>();// tripDateID 담는 리스트
-        List<TripDateRequestDto> tripDateRequestDtoList = totalRequestDto.getTripDateList();
-        for(TripDateRequestDto tripDateRequestDto : tripDateRequestDtoList){
+        List<TripDateOnlyRequestDto> tripDateRequestDtoList = totalRequestDto.getTripDateList();
+        for(TripDateOnlyRequestDto tripDateRequestDto : tripDateRequestDtoList){
             TripDate tripDate = new TripDate(tripDateRequestDto,posts);
             tripDateRepository.save(tripDate); // tripDate 저장
             idList.add(tripDate.getId());
@@ -96,14 +97,16 @@ public class PostsService {
         List<Posts> postsList = postsRepository.findByUsersOrderByCreatedAtDesc(existUser);
 
         List<PostResponseDto> postResponseDtoList = new ArrayList<>();
+
         for (Posts posts : postsList) {
 
-            int commentNum = commentsRepository.countByPosts(posts); // 댓글 세는 메서드
+                int commentNum = commentsRepository.countByPosts(posts); // 댓글 세는 메서드
 
-            List<Tags> tags = tagsRepository.findByPosts(posts);
-            List<TripDate> tripDateList = tripDateRepository.findByPosts(posts);
+                List<Tags> tags = tagsRepository.findByPosts(posts);
+                List<TripDate> tripDateList = tripDateRepository.findByPosts(posts);
 
-            postResponseDtoList.add(new PostResponseDto(posts,tags,posts.getUsers(),commentNum,tripDateList));
+                postResponseDtoList.add(new PostResponseDto(posts, tags, posts.getUsers(), commentNum, tripDateList));
+
         }
         return postResponseDtoList;
     }
@@ -116,7 +119,7 @@ public class PostsService {
         }
 
         // 중복을 방지하기 위한 Set 사용
-        Set<Posts> postsSet = postsRepository.SearchKeyword(keyword);
+        Set<Posts> postsSet = postsRepository.searchKeyword(keyword);
 
 
         if (postsSet.isEmpty()) {
@@ -129,31 +132,30 @@ public class PostsService {
         postsList.sort(Comparator.comparing(Posts::getCreatedAt).reversed());
 
         return getPostResponseDto(postsList);
-
     }
 
     // 랭킹 목록 조회(상위 3개)
     public List<PostResponseDto> getRankPosts() {
 
         // 상위 3개 게시물 가져오기 (좋아요 수 겹칠 시 createdAt 내림차순으로 정렬)
-        List<Posts> postsList = postsRepository.findFirst3ByOrderByLikeNumDescCreatedAtDesc();
+        List<Posts> postsList = postsRepository.findTop3ByTitleIsNotNullAndContentsIsNotNullOrderByLikeNumDescCreatedAtDesc();
         return getPostResponseDto(postsList);
     }
 
     // 사용자가 좋아요 누른 게시물 조회
-    public List<PostResponseDto> getUserLikePosts(Users users) {
+    public Page<PostResponseDto> getUserLikePosts(Users users,int page,int size) {
 
+        Pageable pageable = PageRequest.of(page,size);
         Users existUser = checkUser(users); // 사용자 조회
-        List<PostsLike> userLikePosts = postsLikeRepository.findByUsers(existUser);
-
-        List<Posts> postsList = new ArrayList<>();
-        userLikePosts.stream()
-                .map(PostsLike::getPosts)
-                .forEach(postsList::add);
-
-        postsList.sort(Comparator.comparing(Posts::getCreatedAt).reversed());
-
-        return getLikePostResponse(postsList);
+        Page<Posts> postsPage = postsRepository.findUsersLikePosts(existUser,pageable);
+        if (postsPage.isEmpty()) {
+            throw new CustomException(ErrorCode.POST_NOT_EXIST);
+        }
+        List<PostResponseDto> postResponseDtoList = new ArrayList<>();
+        for(Posts posts:postsPage){
+            postResponseDtoList.add(new PostResponseDto(posts, posts.getUsers()));
+        }
+        return new PageImpl<>(postResponseDtoList, pageable, postsPage.getTotalElements());
     }
 
     // 게시글 좋아요 및 좋아요 취소
@@ -181,8 +183,15 @@ public class PostsService {
         Posts posts = checkPosts(postId); // 게시글 조회
         Users existUser = checkUser(users); // 사용자 조회
         checkAuthority(existUser,posts.getUsers()); //권한 확인 (ROLE 확인 및 게시글 사용자 id와 토큰에서 가져온 사용자 id 일치 여부 확인)
-        posts.update(updateRequestDto); // 수정
 
+        if (posts.getContents() != null && posts.getTitle() != null) { // 이미 게시글 등록이 완료 된 경우
+
+            posts.update(updateRequestDto); // 게시글 수정
+        }
+        else{
+            LocalDateTime time = LocalDateTime.now(); // 게시글 등록할 때의 시간
+            posts.updateTime(updateRequestDto,time); // null 값인 부분 채워줌으로써 게시글 등록
+        }
         List<Tags> tagList = tagsRepository.findByPosts(posts); // 기존 게시물 태그 삭제
         tagsRepository.deleteAll(tagList);
 
@@ -239,24 +248,14 @@ public class PostsService {
 
     // 전체 게시글 관련 반환 시 사용 메서드
     private List<PostResponseDto> getPostResponseDto(List<Posts> postsList) {
-        List<PostResponseDto> postResponseDtoList = new ArrayList<>();
-        for(Posts posts:postsList){
-
-            int commentNum = commentsRepository.countByPosts(posts); // 댓글 세는 메서드
-
-            List<Tags> tag = tagsRepository.findByPosts(posts);
-
-            postResponseDtoList.add(new PostResponseDto(posts,tag,posts.getUsers(),commentNum));
+        if (postsList.isEmpty()) {
+            throw new CustomException(ErrorCode.POST_NOT_EXIST);
         }
-        return postResponseDtoList;
-    }
-
-    // 사용자가 누른 게시글들 관련 반환 시 사용 메서드
-    private List<PostResponseDto> getLikePostResponse(List<Posts> postsList) {
         List<PostResponseDto> postResponseDtoList = new ArrayList<>();
         for(Posts posts:postsList){
-
-            postResponseDtoList.add(new PostResponseDto(posts,posts.getUsers()));
+            int commentNum = commentsRepository.countByPosts(posts); // 댓글 세는 메서드
+            List<Tags> tag = tagsRepository.findByPosts(posts);
+            postResponseDtoList.add(new PostResponseDto(posts, tag, posts.getUsers(), commentNum));
         }
         return postResponseDtoList;
     }
