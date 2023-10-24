@@ -28,7 +28,7 @@ import java.util.List;
 public class RepliesService {
     private final RepliesRepository repliesRepository;
     private final CommentsRepository commentsRepository;
-    private final PostsRepository postsRepository;
+
 
 
     // 대댓글 생성
