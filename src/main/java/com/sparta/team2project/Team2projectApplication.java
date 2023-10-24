@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
-@EnableJpaAuditing
+//@EnableJpaAuditing // 테스트할때 끄기
 public class Team2projectApplication {
 
 	// EC2 Metadata 비활성화
