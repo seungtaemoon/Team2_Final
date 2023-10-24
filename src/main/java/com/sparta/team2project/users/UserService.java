@@ -11,6 +11,7 @@ import com.sparta.team2project.email.ValidNumber.ValidNumberRepository;
 import com.sparta.team2project.email.dto.ValidNumberRequestDto;
 import com.sparta.team2project.profile.Profile;
 import com.sparta.team2project.profile.ProfileRepository;
+import com.sparta.team2project.users.dto.CheckNickNameRequestDto;
 import com.sparta.team2project.users.dto.LoginRequestDto;
 import com.sparta.team2project.users.dto.SignoutRequestDto;
 import com.sparta.team2project.users.dto.SignupRequestDto;
@@ -142,6 +143,14 @@ public class UserService {
         } else {
             return checkNumber; // 인증성공시 true 값이 반환됩니다.
         }
+    }
+    // 닉네임 중복여부 체크 메서드
+    public boolean checkNickName(String nickName) {
+        boolean checkNickName = true;
+        if (userRepository.existsByNickName(nickName)) {
+            throw new CustomException(ErrorCode.DUPLICATED_NICKNAME);
+        }
+        return checkNickName; // 중복이 아닐 경우 true 값이 반환됩니다.
     }
 
 
