@@ -55,7 +55,7 @@ public class RepliesService {
         List<RepliesResponseDto> RepliesResponseDtoList = new ArrayList<>();
 
         for (Replies replies : repliesList) {
-            RepliesResponseDtoList.add(new RepliesResponseDto(replies, replies.getNickname()));
+            RepliesResponseDtoList.add(new RepliesResponseDto(replies, replies.getEmail()));
         }
 
         return new SliceImpl<>(RepliesResponseDtoList, pageable, repliesList.hasNext());

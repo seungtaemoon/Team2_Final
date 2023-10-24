@@ -40,6 +40,7 @@ public class CommentsService {
 
         return new MessageResponseDto ("댓글을 작성하였습니다", 200);
     }
+
     // 댓글 조회
     public Slice<CommentsResponseDto> commentsList(Long postId,
                                                    Pageable pageable) {
@@ -53,7 +54,7 @@ public class CommentsService {
         List<CommentsResponseDto> commentsResponseDtoList = new ArrayList<>();
 
         for (Comments comments : commentsList) {
-            commentsResponseDtoList.add(new CommentsResponseDto(comments, comments.getNickname()));
+            commentsResponseDtoList.add(new CommentsResponseDto(comments, comments.getEmail()));
         }
 
         return new SliceImpl<>(commentsResponseDtoList, pageable, commentsList.hasNext());
