@@ -142,7 +142,6 @@ public class PostsService {
                 List<TripDate> tripDateList = tripDateRepository.findByPosts(posts);
 
                 postResponseDtoList.add(new PostResponseDto(posts, tags, posts.getUsers(), commentNum, tripDateList));
-
         }
         return postResponseDtoList;
     }
@@ -150,7 +149,7 @@ public class PostsService {
     // 키워드 검색
     public List<PostResponseDto> getKeywordPosts(String keyword){
 
-        if(keyword==null){ // 키워드가 null값인 경우
+        if(keyword==null || keyword.isEmpty()){ // 키워드가 null값인 경우
             throw new CustomException(ErrorCode.POST_NOT_SEARCH);
         }
 
@@ -195,8 +194,20 @@ public class PostsService {
         return new PageImpl<>(postResponseDtoList, pageable, postsPage.getTotalElements());
     }
 
+    // 사용자가 좋아요 누른 게시물 id만 조회
+    public List<Long> getUserLikePostsId(Users users) {
+
+        Users existUser = checkUser(users); // 사용자 조회
+        List<Long> idList = postsRepository.findUsersLikePostsId(existUser);
+
+        if (idList.isEmpty()) {
+            throw new CustomException(ErrorCode.POST_NOT_EXIST);
+        }
+        return idList;
+    }
+
     // 게시글 좋아요 및 좋아요 취소
-    public MessageResponseDto like(Long id, Users users){
+    public LikeResponseDto like(Long id, Users users){
         Posts posts = checkPosts(id); // 게시글 조회
 
         Users existUser = checkUser(users); // 사용자 조회
@@ -205,13 +216,13 @@ public class PostsService {
         if(overlap!=null){
             postsLikeRepository.delete(overlap); // 좋아요 삭제
             posts.unlike(); // 해당 게시물 좋아요 취소시키는 메서드
-            return new MessageResponseDto("좋아요 취소",HttpServletResponse.SC_OK);
+            return new LikeResponseDto("좋아요 취소",HttpServletResponse.SC_OK,false);
         }
         else{
             PostsLike postsLike = new PostsLike(posts,existUser);
             postsLikeRepository.save(postsLike); // 좋아요 저장
             posts.like(); // 해당 게시물 좋아요수 증가시키는 메서드
-            return new MessageResponseDto("좋아요 확인",HttpServletResponse.SC_OK);
+            return new LikeResponseDto("좋아요 확인",HttpServletResponse.SC_OK,true);
         }
     }
 
@@ -273,7 +284,7 @@ public class PostsService {
     }
 
     // ADMIN 권한 및 이메일 일치여부 메서드
-    private void checkAuthority(Users existUser,Users users){
+    public void checkAuthority(Users existUser, Users users){
         if (!existUser.getUserRole().equals(UserRoleEnum.ADMIN)&&!existUser.getEmail().equals(users.getEmail())) {throw new CustomException(ErrorCode.NOT_ALLOWED);
         }
     }

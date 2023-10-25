@@ -78,11 +78,15 @@ public class PostsController {
     @GetMapping("/posts/like")
     public ResponseEntity<Page<PostResponseDto>> getUserLikePosts(@RequestParam int page, @RequestParam int size,@AuthenticationPrincipal UserDetailsImpl userDetails){return ResponseEntity.ok(postsService.getUserLikePosts(userDetails.getUsers(),page,size));}
 
+    // 사용자가 좋아요 누른 게시글 id만 조회
+    @Operation(summary = " 사용자가 좋아요 한 게시글 id만 조회 ", description = "사용자가 좋아요 한 게시글 id만 조회 api 입니다.")
+    @GetMapping("/postlike/id")
+    public ResponseEntity<List<Long>> getUserLikePostsId(@AuthenticationPrincipal UserDetailsImpl userDetails){return ResponseEntity.ok(postsService.getUserLikePostsId(userDetails.getUsers()));}
 
     // 좋아요 기능
     @Operation(summary = " 좋아요 기능 ", description = "좋아요 클릭시 1 좋아요 또 누르면 1 취소하는 api 입니다.")
     @GetMapping("/posts/like/{postId}")
-    public ResponseEntity<MessageResponseDto> like(@PathVariable Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<LikeResponseDto> like(@PathVariable Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(postsService.like(postId,userDetails.getUsers()));
     }
 

@@ -14,12 +14,13 @@ import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.users.Users;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,22 +41,29 @@ public class CommentsService {
 
         return new MessageResponseDto ("댓글을 작성하였습니다", 200);
     }
+
     // 댓글 조회
     public Slice<CommentsResponseDto> commentsList(Long postId,
                                                    Pageable pageable) {
 
+        Posts posts = postsRepository.findById(postId).orElseThrow(
+                () -> new CustomException(ErrorCode.POST_NOT_EXIST)); // 존재하지 않는 게시글입니다
+
         Slice<Comments> commentsList = commentsRepository.findByPosts_IdOrderByCreatedAtDesc(postId, pageable);
 
         if (commentsList.isEmpty()) {
-            throw new CustomException(ErrorCode.POST_NOT_EXIST); // 존재하지 않는 게시글입니다
+            throw new CustomException(ErrorCode.COMMENTS_NOT_EXIST); // 존재하지 않는 댓글입니다
         }
 
         List<CommentsResponseDto> commentsResponseDtoList = new ArrayList<>();
 
         for (Comments comments : commentsList) {
-            commentsResponseDtoList.add(new CommentsResponseDto(comments, comments.getNickname()));
+            if (posts.getUsers().getEmail().equals(comments.getEmail())) {
+                commentsResponseDtoList.add(new CommentsResponseDto(comments, "글쓴이"));
+            } else {
+                commentsResponseDtoList.add(new CommentsResponseDto(comments));
+            }
         }
-
         return new SliceImpl<>(commentsResponseDtoList, pageable, commentsList.hasNext());
     }
 
@@ -66,7 +74,7 @@ public class CommentsService {
         Slice<Comments> commentsMeList = commentsRepository.findAllByAndEmailOrderByCreatedAtDesc(users.getEmail(), pageable);
 
         if (commentsMeList.isEmpty()) {
-            throw new CustomException(ErrorCode.POST_NOT_EXIST); // 존재하지 않는 게시글입니다
+            throw new CustomException(ErrorCode.COMMENTS_NOT_EXIST); // 존재하지 않는 댓글입니다
         }
 
         List<CommentsMeResponseDto> CommentsMeResponseDtoList = new ArrayList<>();
