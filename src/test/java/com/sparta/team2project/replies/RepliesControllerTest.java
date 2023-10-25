@@ -1,4 +1,4 @@
-package com.sparta.team2project.comments;
+package com.sparta.team2project.replies;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.team2project.comments.controller.CommentsController;
@@ -8,6 +8,10 @@ import com.sparta.team2project.comments.entity.Comments;
 import com.sparta.team2project.commons.config.WebSecurityConfig;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
+import com.sparta.team2project.replies.controller.RepliesController;
+import com.sparta.team2project.replies.dto.RepliesRequestDto;
+import com.sparta.team2project.replies.dto.RepliesResponseDto;
+import com.sparta.team2project.replies.entity.Replies;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest (
-        controllers = {CommentsController.class},
+        controllers = {RepliesController.class},
         // 제외 할 것 지정
         excludeFilters = {
                 @ComponentScan.Filter(
@@ -49,7 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         }
 )
 
-class CommentsControllerTest {
+class RepliesControllerTest {
 
     // 필요한 의존 객체의 타입에 해당하는 빈을 찾아 주입
     @Autowired
@@ -61,7 +65,7 @@ class CommentsControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    CommentsController commentsController;
+    RepliesController repliesController;
 
     // 테스트할 USER 객체
     private void mockUserSetup() {
@@ -76,52 +80,52 @@ class CommentsControllerTest {
 
     @WithMockUser
     @Test
-    @DisplayName("댓글 생성")
-    public void commentsCreateTest() throws Exception {
+    @DisplayName("대댓글 생성")
+    public void repliesCreateTest() throws Exception {
         mockUserSetup();
 
         // Given
-        Long postId = 1L;
-        String contents = "댓글";
-        CommentsRequestDto requestDto = new CommentsRequestDto(contents);
+        Long commentId = 1L;
+        String contents = "대댓글";
+        RepliesRequestDto requestDto = new RepliesRequestDto(contents);
 
         // eq : 특정한 값을 기대하는 경우에 사용됨
         // any : 어떤 값이든 허용하는 경우에 사용됨
-        when(commentsController.commentsCreate(eq(postId), any(CommentsRequestDto.class), any(UserDetailsImpl.class)))
-                .thenReturn(new ResponseEntity<>(new MessageResponseDto("댓글을 작성하였습니다.", 200), HttpStatus.OK));
+        when(repliesController.repliesCreate(eq(commentId), any(RepliesRequestDto.class), any(UserDetailsImpl.class)))
+                .thenReturn(new ResponseEntity<>(new MessageResponseDto("대댓글을 작성하였습니다", 200), HttpStatus.OK));
 
         // Wen and Then
-        mvc.perform(MockMvcRequestBuilders.post("/api/posts/"+postId+"/comments")
+        mvc.perform(MockMvcRequestBuilders.post("/api/comments/" + commentId + "/replies")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto))
                         .with(csrf()) // CSRF 토큰을 요청에 포함
                         .principal(principal)) // 가짜 사용자 principal 설정
-                        .andExpect(status().isOk())
-                        .andDo(print());
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
     @WithMockUser
     @Test
-    @DisplayName("댓글 조회")
-    public void commentsListTest() throws Exception {
+    @DisplayName("대댓글 조회")
+    public void repliesListTest() throws Exception {
 
         // Given
-        Long postId = 1L;
-        Comments comments1 = new Comments();
-        Comments comments2 = new Comments();
+        Long commentId = 1L;
+        Replies replies1 = new Replies();
+        Replies replies2 = new Replies();
 
-        List<CommentsResponseDto> responseDto = Arrays.asList(
-                new CommentsResponseDto(comments1),
-                new CommentsResponseDto(comments2)
+        List<RepliesResponseDto> responseDto = Arrays.asList(
+                new RepliesResponseDto(replies1),
+                new RepliesResponseDto(replies2)
         );
 
         // eq : 특정한 값을 기대하는 경우에 사용됨
         // any : 어떤 값이든 허용하는 경우에 사용됨
-        when(commentsController.commentsList(eq(postId), any(Pageable.class)))
+        when(repliesController.repliesList(eq(commentId), any(Pageable.class)))
                 .thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         // Wen and Then
-        mvc.perform(MockMvcRequestBuilders.get("/api/posts/" + postId + "/comments")
+        mvc.perform(MockMvcRequestBuilders.get("/api/comments/"+commentId+"/replies")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(responseDto)))
                         .andExpect(status().isOk())
@@ -131,25 +135,25 @@ class CommentsControllerTest {
     @WithMockUser
     @Test
     @DisplayName("마이페이지에서 내가 쓴 댓글 조회")
-    public void commentsMeListTest() throws Exception {
+    public void repliesMeListTest() throws Exception {
         mockUserSetup();
 
         // Given
-        Comments comments1 = new Comments();
-        Comments comments2 = new Comments();
+        Replies replies1 = new Replies();
+        Replies replies2 = new Replies();
 
-        List<CommentsResponseDto> responseDto = Arrays.asList(
-                new CommentsResponseDto(comments1),
-                new CommentsResponseDto(comments2)
+        List<RepliesResponseDto> responseDto = Arrays.asList(
+                new RepliesResponseDto(replies1),
+                new RepliesResponseDto(replies2)
         );
 
         // eq : 특정한 값을 기대하는 경우에 사용됨
         // any : 어떤 값이든 허용하는 경우에 사용됨
-        when(commentsController.commentsMeList(any(UserDetailsImpl.class), any(Pageable.class)))
+        when(repliesController.repliesMeList(any(UserDetailsImpl.class), any(Pageable.class)))
                 .thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         // Wen and Then
-        mvc.perform(MockMvcRequestBuilders.get("/api/commentsme")
+        mvc.perform(MockMvcRequestBuilders.get("/api/repliesme")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(responseDto))
                         .with(csrf()) // CSRF 토큰을 요청에 포함
@@ -160,50 +164,52 @@ class CommentsControllerTest {
 
     @WithMockUser
     @Test
-    @DisplayName("댓글 수정")
-    public void commentsUpdateTest() throws Exception {
+    @DisplayName("대댓글 수정")
+    public void repliesUpdateTest() throws Exception {
         mockUserSetup();
 
         // Given
-        Long commentId = 1L;
-        String contents = "댓글";
-        CommentsRequestDto requestDto = new CommentsRequestDto(contents);
+        Long repliesId = 1L;
+        String contents = "대댓글";
+        RepliesRequestDto requestDto = new RepliesRequestDto(contents);
 
         // eq : 특정한 값을 기대하는 경우에 사용됨
         // any : 어떤 값이든 허용하는 경우에 사용됨
-        when(commentsController.commentsUpdate(eq(commentId), any(CommentsRequestDto.class), any(UserDetailsImpl.class)))
-                .thenReturn(new ResponseEntity<>(new MessageResponseDto("댓글을 수정하였습니다.", 200), HttpStatus.OK));
+        when(repliesController.repliesUpdate(eq(repliesId), any(RepliesRequestDto.class), any(UserDetailsImpl.class)))
+                .thenReturn(new ResponseEntity<>(new MessageResponseDto("대댓글을 수정하였습니다", 200), HttpStatus.OK));
 
         // Wen and Then
-        mvc.perform(MockMvcRequestBuilders.put("/api/comments/"+commentId)
+        mvc.perform(MockMvcRequestBuilders.put("/api/replies/" + repliesId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto))
                         .with(csrf()) // CSRF 토큰을 요청에 포함
                         .principal(principal)) // 가짜 사용자 principal 설정
-                        .andExpect(status().isOk())
-                        .andDo(print());
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 
     @WithMockUser
     @Test
-    @DisplayName("댓글 삭제")
-    public void commentsDeleteTest() throws Exception {
+    @DisplayName("대댓글 삭제")
+    public void repliesDeleteTest() throws Exception {
         mockUserSetup();
 
         // Given
-        Long commentId = 1L;
+        Long repliesId = 1L;
 
         // eq : 특정한 값을 기대하는 경우에 사용됨
         // any : 어떤 값이든 허용하는 경우에 사용됨
-        when(commentsController.commentsDelete(eq(commentId), any(UserDetailsImpl.class)))
-                .thenReturn(new ResponseEntity<>(new MessageResponseDto("댓글을 삭제하였습니다.", 200), HttpStatus.OK));
+        when(repliesController.repliesDelete(eq(repliesId), any(UserDetailsImpl.class)))
+                .thenReturn(new ResponseEntity<>(new MessageResponseDto("대댓글을 삭제하였습니다", 200), HttpStatus.OK));
 
         // Wen and Then
-        mvc.perform(MockMvcRequestBuilders.delete("/api/comments/"+commentId)
+        mvc.perform(MockMvcRequestBuilders.delete("/api/replies/" + repliesId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(csrf()) // CSRF 토큰을 요청에 포함
                         .principal(principal)) // 가짜 사용자 principal 설정
-                        .andExpect(status().isOk())
-                        .andDo(print());
+                .andExpect(status().isOk())
+                .andDo(print());
     }
 }
+
+

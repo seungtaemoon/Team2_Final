@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor // test 에 사용
+@NoArgsConstructor // test 에 사용
 public class CommentsRequestDto {
     private String contents;
 }
