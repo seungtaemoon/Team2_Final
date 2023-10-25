@@ -5,6 +5,9 @@ import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
+import com.sparta.team2project.pictures.repository.PicturesRepository;
+import com.sparta.team2project.profile.dto.AboutMeRequestDto;
+import com.sparta.team2project.profile.dto.PasswordRequestDto;
 import com.sparta.team2project.profile.dto.ProfileNickNameRequestDto;
 import com.sparta.team2project.users.UserRepository;
 import com.sparta.team2project.users.UserService;
@@ -20,29 +23,27 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProfileServiceTest {
-
+    @InjectMocks
+    private ProfileService profileService;
     @Mock
     private ProfileRepository profileRepository;
     @Mock
     private UserRepository userRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
-    @Mock
-    private AmazonS3Client amazonS3Client;
 
-    @InjectMocks
-    private ProfileService profileService;
-    @InjectMocks
-    private UserService userService;
+
 
     private Users createUserWithProfileImg(String profileImg) {
         Users user = new Users("test@example.com", "TestUser", "password", UserRoleEnum.USER, profileImg);
@@ -74,7 +75,7 @@ class ProfileServiceTest {
 
         @Test
         @DisplayName("프로필 이미지 URL을 읽어오기")
-        void readProfileImg() throws MalformedURLException {
+        void readProfileImg() {
             // given
             String profileImg = "https://example.com/profile-image.jpg";
             Users user = createUserWithProfileImg(profileImg);
@@ -87,7 +88,7 @@ class ProfileServiceTest {
         }
 
         @Test
-        @DisplayName("프로필 조회 실패 - User가 없는 경우")
+        @DisplayName("프로필 조회 실패 - User 가 없는 경우")
         void getProfileFailUserNotFound() {
             // given
             Users users = createUserWithProfileImg("profile.jpg");
@@ -101,25 +102,20 @@ class ProfileServiceTest {
             // then
             assertEquals(ErrorCode.ID_NOT_MATCH, ((CustomException) exception).getErrorCode());
         }
-
         @Test
-        @DisplayName("프로필 조회 실패 - 권한이 없는 경우")
-        void getProfileFailCheckAuthority() {
+        @DisplayName("프로필 조회 실패 - 프로필이 존재하지 않는 경우")
+        void getProfileFailCheckProfile() {
             // given
             Users users = createUserWithProfileImg("profile.jpg");
-            String userEmail = users.getEmail();
 
-            // Mock 객체로 userRepository 설정
-            when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(users));
+            // 예외처리 없이 진행되는 경우 설정
+            when(userRepository.findByEmail(users.getEmail())).thenReturn(Optional.of(users));
+            when(profileRepository.findByUsers_Email(users.getEmail())).thenReturn(Optional.empty());
 
-            // Mock 객체로 existUser 설정
-            Users existUser = new Users("other@example.com", "OtherUser", "otherPassword", UserRoleEnum.USER, "other.jpg");
-
-            //when
+            // when
             Throwable exception = assertThrows(CustomException.class, () -> profileService.getProfile(users));
-
-            //  then
-            assertEquals(ErrorCode.NOT_ALLOWED, ((CustomException) exception).getErrorCode());
+            // then
+            assertEquals(ErrorCode.PROFILE_NOT_EXIST, ((CustomException) exception).getErrorCode());
         }
     }
 
@@ -128,55 +124,145 @@ class ProfileServiceTest {
     @DisplayName("UpdateProfile")
     class UpdateProfile {
         @Test
-        @DisplayName("프로필 수정성공 - 닉네임")
+        @DisplayName("프로필 수정 성공 - 닉네임")
         void updateNickNameSuccess() {
-            // given
-            Users users = createUserWithProfileImg("profile.jpg");
-            Profile profile = new Profile(users);
+            // Given
+            Users user = createUserWithProfileImg("profile.jpg");
+            Profile profile = new Profile(user);
             ProfileNickNameRequestDto requestDto = new ProfileNickNameRequestDto();
 
-            when(userRepository.findById(users.getId())).thenReturn(Optional.of(users));
-            when(profileRepository.findById(profile.getId())).thenReturn(Optional.of(profile));
+            // 예외처리 없이 진행되는 경우 설정
+            when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+            when(profileRepository.findByUsers_Email(user.getEmail())).thenReturn(Optional.of(profile));
 
-            // when
-            ResponseEntity<MessageResponseDto> response = profileService.updateNickName(requestDto, users);
+            when(userRepository.existsByNickName(requestDto.getUpdateNickName())).thenReturn(false);
 
-            // then
+            // When
+            ResponseEntity<MessageResponseDto> response = profileService.updateNickName(requestDto, user);
+
+            // Then
             assertEquals(HttpStatus.OK, response.getStatusCode());
             assertEquals("마이페이지 수정 성공", response.getBody().getMsg());
+            verify(userRepository, times(1)).existsByNickName(requestDto.getUpdateNickName());
         }
 
         @Test
-        @DisplayName("프로필 수정성공 - 프로필 이미지")
-        void updateProfileImgSuccess() {
+        @DisplayName("프로필 수정 실패 - 중복 닉네임")
+        void updateNickNameFailDuplicate() {
+            // Given
+            Users user = createUserWithProfileImg("profile.jpg");
+            Profile profile = new Profile(user);
+            ProfileNickNameRequestDto requestDto = new ProfileNickNameRequestDto();
+
+            // 예외처리 없이 진행되는 경우 설정
+            when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+            when(profileRepository.findByUsers_Email(user.getEmail())).thenReturn(Optional.of(profile));
+            when(userRepository.existsByNickName(requestDto.getUpdateNickName())).thenReturn(true);
+            Throwable exception = assertThrows(CustomException.class, () -> profileService.updateNickName(requestDto, user));
+
+            // When
+            assertThrows(CustomException.class, () -> profileService.updateNickName(requestDto, user));
+            assertEquals(ErrorCode.DUPLICATED_NICKNAME, ((CustomException) exception).getErrorCode());
         }
 
         @Test
         @DisplayName("프로필 수정성공 - 비밀번호")
         void updatePasswordSuccess() {
+            // Given
+            Users user = createUserWithProfileImg("profile.jpg");
+            Profile profile = new Profile(user);
+            PasswordRequestDto requestDto = new PasswordRequestDto();
+
+            // 예외처리 없이 진행되는 경우 설정
+            when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+            when(profileRepository.findByUsers_Email(user.getEmail())).thenReturn(Optional.of(profile));
+            when(passwordEncoder.matches(eq(requestDto.getCurrentPassword()), anyString())).thenReturn(true);
+
+            // 리플렉션을 사용하여 private 필드인 updatePassword에 값을 주입
+            try {
+                Field updatePasswordField = PasswordRequestDto.class.getDeclaredField("updatePassword");
+                updatePasswordField.setAccessible(true);
+                updatePasswordField.set(requestDto, "newPassword");
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+            // When
+            ResponseEntity<MessageResponseDto> response = profileService.updatePassword(requestDto, user);
+
+            // Then
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertEquals("내 정보 수정 완료", response.getBody().getMsg());
         }
+
+        @Test
+        @DisplayName("프로필 수정실패 - 현재 비밀번호 확인 불일치")
+        void updatePasswordFailPasswordNotMatch() {
+            // Given
+            Users user = createUserWithProfileImg("profile.jpg");
+            Profile profile = new Profile(user);
+            PasswordRequestDto requestDto = new PasswordRequestDto();
+
+            // 예외처리 없이 진행되는 경우 설정
+            when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+            when(profileRepository.findByUsers_Email(user.getEmail())).thenReturn(Optional.of(profile));
+            // 비밀번호가 일치하지 않을 경우 설정
+            when(passwordEncoder.matches(requestDto.getCurrentPassword(), user.getPassword())).thenReturn(false);
+
+            // When
+            Throwable exception = assertThrows(CustomException.class, () -> profileService.updatePassword(requestDto, user));
+
+            // Then
+            assertEquals(ErrorCode.CURRENT_PASSWORD_NOT_MATCH, ((CustomException) exception).getErrorCode());
+        }
+
+        @Test
+        @DisplayName("프로필 수정실패 - 동일한 비밀번호")
+        void updatePasswordFailSamePassword() throws Exception {
+            // Given
+            Users user = createUserWithProfileImg("profile.jpg");
+            Profile profile = new Profile(user);
+            PasswordRequestDto requestDto = new PasswordRequestDto();
+
+            // 리플렉션을 사용하여 PasswordRequestDto의 private 필드인 currentPassword, updatePassword에 값을 주입
+            Field currentPasswordField = PasswordRequestDto.class.getDeclaredField("currentPassword");
+            currentPasswordField.setAccessible(true);
+            currentPasswordField.set(requestDto, "samePassword");
+
+            Field updatePasswordField = PasswordRequestDto.class.getDeclaredField("updatePassword");
+            updatePasswordField.setAccessible(true);
+            updatePasswordField.set(requestDto, "samePassword");
+
+            // 예외처리 없이 진행되는 경우 설정
+            when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+            when(profileRepository.findByUsers_Email(user.getEmail())).thenReturn(Optional.of(profile));
+            when(passwordEncoder.matches(requestDto.getCurrentPassword(), user.getPassword())).thenReturn(true);
+
+            // When
+            Throwable exception = assertThrows(CustomException.class, () -> profileService.updatePassword(requestDto, user));
+
+            // Then
+            assertEquals(ErrorCode.SAME_PASSWORD, ((CustomException) exception).getErrorCode());
+        }
+
 
         @Test
         @DisplayName("프로필 수정성공 - 자기소개")
         void updateAboutMeSuccess() {
+            // Given
+            Users user = createUserWithProfileImg("profile.jpg");
+            Profile profile = new Profile(user);
+            AboutMeRequestDto requestDto = new AboutMeRequestDto();
 
-        }
+            // 예외처리 없이 진행되는 경우 설정
+            when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+            when(profileRepository.findByUsers_Email(user.getEmail())).thenReturn(Optional.of(profile));
 
-        @Test
-        @DisplayName("프로필 조회 실패 - 프로필이 존재하지 않는 경우")
-        void getProfileFailCheckProfile() {
-            // given
-            Users users = createUserWithProfileImg("profile.jpg");
-            String userEmail = users.getEmail();
-            // Mock 객체로 userRepository 설정
-            when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(users));
-            // Mock 객체로 existUser 설정
-            Users existUser = new Users("admin@example.com", "AdminUser", "adminPassword", UserRoleEnum.ADMIN, "admin.jpg");
+            ResponseEntity<MessageResponseDto> response = profileService.updateAboutMe(requestDto, user);
 
-            // when
-            Throwable exception = assertThrows(CustomException.class, () -> profileService.getProfile(users));
-            // then
-            assertEquals(ErrorCode.PROFILE_NOT_EXIST, ((CustomException) exception).getErrorCode());
+            // Then
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+            assertEquals("내 정보 수정 완료", response.getBody().getMsg());
         }
     }
 }
