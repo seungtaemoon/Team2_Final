@@ -1,16 +1,28 @@
 package com.sparta.team2project.posts.service;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.sparta.team2project.comments.entity.Comments;
 import com.sparta.team2project.comments.repository.CommentsRepository;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
+import com.sparta.team2project.posts.dto.PostsPicturesResponseDto;
+import com.sparta.team2project.posts.dto.PostsPicturesUploadResponseDto;
+import com.sparta.team2project.posts.entity.PostsPictures;
 import com.sparta.team2project.posts.dto.*;
 import com.sparta.team2project.posts.entity.Posts;
+import com.sparta.team2project.posts.repository.PostsPicturesRepository;
 import com.sparta.team2project.posts.repository.PostsRepository;
 import com.sparta.team2project.postslike.entity.PostsLike;
 import com.sparta.team2project.postslike.repository.PostsLikeRepository;
+import com.sparta.team2project.s3.AmazonS3ResourceStorage;
+import com.sparta.team2project.s3.CustomMultipartFile;
+import com.sparta.team2project.schedules.entity.Schedules;
+import com.sparta.team2project.schedules.repository.SchedulesRepository;
 import com.sparta.team2project.tags.entity.Tags;
 import com.sparta.team2project.tags.repository.TagsRepository;
 import com.sparta.team2project.tripdate.entity.TripDate;
@@ -19,10 +31,20 @@ import com.sparta.team2project.users.UserRepository;
 import com.sparta.team2project.users.Users;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import marvin.image.MarvinImage;
+import org.marvinproject.image.transform.scale.Scale;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,6 +61,14 @@ public class PostsService {
     private final UserRepository usersRepository;
     private final CommentsRepository commentsRepository;
     private final TagsRepository tagsRepository;
+
+    // 사진 저장을 위한 필드 선언
+    private final AmazonS3ResourceStorage amazonS3ResourceStorage;
+    private final AmazonS3Client amazonS3Client;
+    private final PostsPicturesRepository postsPicturesRepository;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     // 게시글 생성
     public PostMessageResponseDto createPost(TotalRequestDto totalRequestDto,Users users) {
@@ -264,5 +294,93 @@ public class PostsService {
             postResponseDtoList.add(new PostResponseDto(posts, tag, posts.getUsers(), commentNum));
         }
         return postResponseDtoList;
+    }
+
+    // 사진 업로드 사이즈 조정 메서드
+    @Transactional
+    public MultipartFile resizer(String fileName, String fileFormat, MultipartFile originalImage, int width) {
+
+        try {
+            BufferedImage image = ImageIO.read(originalImage.getInputStream());// MultipartFile -> BufferedImage Convert
+
+            int originWidth = image.getWidth();
+            int originHeight = image.getHeight();
+
+            // origin 이미지가 400보다 작으면 패스
+            if(originWidth < width)
+                return originalImage;
+
+            MarvinImage imageMarvin = new MarvinImage(image);
+
+            Scale scale = new Scale();
+            scale.load();
+            scale.setAttribute("newWidth", width);
+            scale.setAttribute("newHeight", width * originHeight / originWidth);//비율유지를 위해 높이 유지
+            scale.process(imageMarvin.clone(), imageMarvin, null, null, false);
+
+            BufferedImage imageNoAlpha = imageMarvin.getBufferedImageNoAlpha();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(imageNoAlpha, fileFormat, baos);
+            baos.flush();
+
+            return new CustomMultipartFile(fileName,fileFormat,originalImage.getContentType(), baos.toByteArray());
+
+        } catch (IOException e) {
+            throw new CustomException(ErrorCode.UNABLE_TO_CONVERT);
+        }
+    }
+
+    // 게시글 사진 업로드 API
+    @SneakyThrows
+    public PostsPicturesUploadResponseDto uploadPostsPictures(Long postId, List<MultipartFile> files, Users users) {
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users);         // 권한 확인
+        // 기 존재하는 사진이 있는지 확인
+        Posts checkPosts = postsRepository.findById(postId).orElseThrow(
+                () -> new CustomException(ErrorCode.ID_NOT_MATCH)
+        );
+        List<PostsPictures> checkPostsPicturesList = checkPosts.getPostsPicturesList();
+        List<PostsPicturesResponseDto> postsPicturesResponseDtoList = new ArrayList<>();
+        // 1. 파일 정보를 picturesResponseDtoList에 저장
+        for (int i = 0; i < files.size(); i++) {
+            // 해당 위치의 파일 이름이 null값이면 사진 등록 작업 수행
+            if (checkPostsPicturesList.get(i).getPostsPicturesName() == null) {
+                String postsPicturesName = files.get(i).getOriginalFilename();
+                String postsPicturesURL = "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com" + "/" + "postsPictures" + "/" + postsPicturesName;
+                String postsPictureContentType = files.get(i).getContentType();
+                String fileFormatName = files.get(i).getContentType().substring(files.get(i).getContentType().lastIndexOf("/") + 1);
+                // 2. 이미지 리사이즈 함수 호출
+                MultipartFile resizedImage = resizer(postsPicturesName, fileFormatName, files.get(i), 250);
+                Long postsPictureSize = resizedImage.getSize();  // 단위: KBytes
+                PostsPicturesResponseDto postsPicturesResponseDto = new PostsPicturesResponseDto(
+                        postId, postsPicturesURL, postsPicturesName, postsPictureContentType, postsPictureSize);
+                postsPicturesResponseDtoList.add(postsPicturesResponseDto);
+                // 3. Repository에 파일 정보를 저장하기 위해 PicturesList에 저장(schedulesId 필요)
+                Posts posts = postsRepository.findById(postId).orElseThrow(
+                        () -> new CustomException(ErrorCode.ID_NOT_MATCH)
+                );
+                // 4. 기 존재하는 PostsPictures의 null값들을 업데이트
+                PostsPictures postsPictures = checkPostsPicturesList.get(i);
+                postsPictures.updatePostsPictures(postsPicturesURL, postsPicturesName, postsPictureContentType, postsPictureSize);
+                checkPostsPicturesList.add(postsPictures);
+                // 4. 사진을 메타데이터 및 정보와 함께 S3에 저장
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentType(resizedImage.getContentType());
+                metadata.setContentLength(resizedImage.getSize());
+                try (InputStream inputStream = resizedImage.getInputStream()) {
+                    amazonS3Client.putObject(new PutObjectRequest(bucket + "/postsPictures", postsPicturesName, inputStream, metadata)
+                            .withCannedAcl(CannedAccessControlList.PublicRead));
+                } catch (IOException e) {
+                    throw new CustomException(ErrorCode.S3_NOT_UPLOAD);
+                }
+            }
+
+
+        }
+        // 4. Repository에 Pictures리스트를 저장
+        postsPicturesRepository.saveAll(checkPostsPicturesList);// 5. 성공 메시지 DTO와 함께 picturesResponseDtoList를 반환
+        MessageResponseDto messageResponseDto = new MessageResponseDto("아래 파일들이 등록되었습니다.", 200);
+        PostsPicturesUploadResponseDto postsPicturesUploadResponseDto = new PostsPicturesUploadResponseDto(postsPicturesResponseDtoList, messageResponseDto);
+        return postsPicturesUploadResponseDto;
     }
 }
