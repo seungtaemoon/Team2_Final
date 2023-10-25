@@ -2,9 +2,7 @@ package com.sparta.team2project.posts.service;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import com.sparta.team2project.comments.entity.Comments;
 import com.sparta.team2project.comments.repository.CommentsRepository;
 import com.sparta.team2project.commons.dto.MessageResponseDto;
@@ -13,6 +11,7 @@ import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.pictures.dto.PicturesMessageResponseDto;
 import com.sparta.team2project.pictures.dto.PicturesResponseDto;
+import com.sparta.team2project.pictures.dto.UploadResponseDto;
 import com.sparta.team2project.pictures.entity.Pictures;
 import com.sparta.team2project.posts.dto.PostsPicturesResponseDto;
 import com.sparta.team2project.posts.dto.PostsPicturesUploadResponseDto;
@@ -46,9 +45,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -388,6 +385,71 @@ public class PostsService {
         return postsPicturesUploadResponseDto;
     }
 
+    public PostsPicturesUploadResponseDto getPostsPictures(Long postId) {
+        // 1. Schedules 객체를 찾아 연결된 Pictures 불러오기
+        Posts posts = postsRepository.findById(postId).orElseThrow(
+                () -> new CustomException(ErrorCode.ID_NOT_MATCH)
+        );
+        // 2. 불러온 Pictures의 리스트를 DTO의 리스트로 변환
+        List<PostsPictures> postsPicturesList = posts.getPostsPicturesList();
+        List<PostsPicturesResponseDto> postsPicturesResponseDtoList = new ArrayList<>(3);
+        for (PostsPictures postsPictures : postsPicturesList) {
+            // 3. 파일 불러오기
+            try {
+                S3Object s3Object = amazonS3Client.getObject(bucket + "/postsPictures", postsPictures.getPostsPicturesName());
+                S3ObjectInputStream s3ObjectInputStream = s3Object.getObjectContent();
+                FileOutputStream fileOutputStream = new FileOutputStream(new File(postsPictures.getPostsPicturesName()));
+                byte[] read_buf = new byte[1024];
+                int read_len = 0;
+                while ((read_len = s3ObjectInputStream.read(read_buf)) > 0) {
+                    fileOutputStream.write(read_buf, 0, read_len);
+                }
+                s3ObjectInputStream.close();
+                fileOutputStream.close();
+            } catch (AmazonServiceException e) {
+                throw new AmazonServiceException(e.getErrorMessage());
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e.getMessage());
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+            // 4. 각 사진 파일 정보(Pictures)를 DTO리스트에 저장
+            PostsPicturesResponseDto postsPicturesResponseDto = new PostsPicturesResponseDto(postsPictures);
+            postsPicturesResponseDtoList.add(postsPicturesResponseDto);
+        }
+        // 5. 성공 메시지와 함께 사진 정보 반환
+        MessageResponseDto messageResponseDto = new MessageResponseDto("요청한 파일을 반환하였습니다.", 200);
+        PostsPicturesUploadResponseDto postsPicturesUploadResponseDto = new PostsPicturesUploadResponseDto(postsPicturesResponseDtoList, messageResponseDto);
+        return postsPicturesUploadResponseDto;
+    }
+
+    public PostsPicturesResponseDto getPostsPicture(Long postsPicturesId) {
+        try {
+            // 1. 파일을 찾아 열기
+            PostsPictures postsPictures = postsPicturesRepository.findById(postsPicturesId).orElseThrow(
+                    () -> new CustomException(ErrorCode.ID_NOT_MATCH)
+            );
+            S3Object s3Object = amazonS3Client.getObject(bucket + "/postsPictures", postsPictures.getPostsPicturesName());
+            S3ObjectInputStream s3ObjectInputStream = s3Object.getObjectContent();
+            FileOutputStream fileOutputStream = new FileOutputStream(new File(postsPictures.getPostsPicturesName()));
+            byte[] read_buf = new byte[1024];
+            int read_len = 0;
+            while ((read_len = s3ObjectInputStream.read(read_buf)) > 0) {
+                fileOutputStream.write(read_buf, 0, read_len);
+            }
+            s3ObjectInputStream.close();
+            fileOutputStream.close();
+            // 2. 사진 파일 정보(Pictures) 반환
+            return new PostsPicturesResponseDto(postsPictures);
+        } catch (AmazonServiceException e) {
+            throw new AmazonServiceException(e.getErrorMessage());
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public PostsPicturesMessageResponseDto updatePictures(Long postsPicturesId, MultipartFile file, Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users);         // 권한 확인
@@ -436,4 +498,6 @@ public class PostsService {
         MessageResponseDto messageResponseDto = new MessageResponseDto("사진이 삭제되었습니다.", 200);
         return messageResponseDto;
     }
+
+
 }

@@ -6,6 +6,7 @@ import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
 
 import com.sparta.team2project.pictures.dto.PicturesMessageResponseDto;
+import com.sparta.team2project.pictures.dto.PicturesResponseDto;
 import com.sparta.team2project.pictures.dto.UploadResponseDto;
 import com.sparta.team2project.posts.dto.PostMessageResponseDto;
 import com.sparta.team2project.posts.dto.PostResponseDto;
@@ -115,6 +116,16 @@ public class PostsController {
         }
     }
 
+    @GetMapping("/posts/{postId}/postsPictures")
+    public PostsPicturesUploadResponseDto getPostsPictures(@PathVariable("postId") Long postId){
+        return postsService.getPostsPictures(postId);
+    }
+
+    @GetMapping("/postsPictures/{postsPicturesId}")
+    public PostsPicturesResponseDto getPostsPicture(@PathVariable("postsPicturesId") Long postsPicturesId){
+        return postsService.getPostsPicture(postsPicturesId);
+    }
+
     @PutMapping("/postsPictures/{postsPicturesId}")
     public PostsPicturesMessageResponseDto updatePictures(@PathVariable("postsPicturesId") Long postsPicturesId,
                                                      @RequestParam("file") MultipartFile file,
@@ -129,4 +140,5 @@ public class PostsController {
     ){
         return postsService.deletePictures(postsPicturesId, userDetails.getUsers());
     }
+
 }
