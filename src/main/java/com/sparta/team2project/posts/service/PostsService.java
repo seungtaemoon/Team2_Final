@@ -1,5 +1,6 @@
 package com.sparta.team2project.posts.service;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -10,6 +11,9 @@ import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
+import com.sparta.team2project.pictures.dto.PicturesMessageResponseDto;
+import com.sparta.team2project.pictures.dto.PicturesResponseDto;
+import com.sparta.team2project.pictures.entity.Pictures;
 import com.sparta.team2project.posts.dto.PostsPicturesResponseDto;
 import com.sparta.team2project.posts.dto.PostsPicturesUploadResponseDto;
 import com.sparta.team2project.posts.entity.PostsPictures;
@@ -382,5 +386,54 @@ public class PostsService {
         MessageResponseDto messageResponseDto = new MessageResponseDto("아래 파일들이 등록되었습니다.", 200);
         PostsPicturesUploadResponseDto postsPicturesUploadResponseDto = new PostsPicturesUploadResponseDto(postsPicturesResponseDtoList, messageResponseDto);
         return postsPicturesUploadResponseDto;
+    }
+
+    public PostsPicturesMessageResponseDto updatePictures(Long postsPicturesId, MultipartFile file, Users users) {
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users);         // 권한 확인
+        PostsPictures postsPictures = postsPicturesRepository.findById(postsPicturesId).orElseThrow(
+                () -> new CustomException(ErrorCode.ID_NOT_MATCH));
+        // 1. 파일 기본 정보 추출
+        String postsPicturesName = file.getOriginalFilename();
+        String postsPicturesURL = "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com" + "/" + "postsPictures" + "/" + postsPicturesName;
+        String postsPictureContentType = file.getContentType();
+        String fileFormatName = file.getContentType().substring(file.getContentType().lastIndexOf("/") + 1);
+        // 2. 이미지 사이즈 재조정
+        MultipartFile resizedImage = resizer(postsPicturesName, fileFormatName, file, 250);
+        Long postsPictureSize = resizedImage.getSize();  // 단위: KBytes
+        Long postId = postsPictures.getPosts().getId();
+        PostsPicturesResponseDto postsPicturesResponseDto = new PostsPicturesResponseDto(
+                postId, postsPicturesURL, postsPicturesName, postsPictureContentType, postsPictureSize);
+        postsPictures.updatePostsPictures(postsPicturesURL, postsPicturesName, postsPictureContentType, postsPictureSize);
+        postsPicturesRepository.save(postsPictures);
+        // 3. 사진을 메타데이터 및 정보와 함께 S3에 저장
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(resizedImage.getContentType());
+        metadata.setContentLength(resizedImage.getSize());
+        try (InputStream inputStream = resizedImage.getInputStream()) {
+            amazonS3Client.putObject(new PutObjectRequest(bucket + "/postsPictures", postsPicturesName, inputStream, metadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
+        } catch (IOException e) {
+            throw new CustomException(ErrorCode.S3_NOT_UPLOAD);
+        }
+        MessageResponseDto messageResponseDto = new MessageResponseDto("사진이 업데이트 되었습니다.", 200);
+        PostsPicturesMessageResponseDto postsPicturesMessageResponseDto = new PostsPicturesMessageResponseDto(postsPicturesResponseDto, messageResponseDto);
+        return postsPicturesMessageResponseDto;
+    }
+
+    public MessageResponseDto deletePictures(Long postsPicturesId, Users users) {
+        Users existUser = checkUser(users); // 유저 확인
+        checkAuthority(existUser, users);         // 권한 확인
+        PostsPictures postsPictures = postsPicturesRepository.findById(postsPicturesId).orElseThrow(
+                () -> new CustomException(ErrorCode.ID_NOT_MATCH)
+        );
+        try {
+            amazonS3Client.deleteObject(bucket + "/postsPictures", postsPictures.getPostsPicturesName());
+        } catch (AmazonServiceException e) {
+            throw new AmazonServiceException(e.getErrorMessage());
+        }
+        postsPicturesRepository.delete(postsPictures);
+        MessageResponseDto messageResponseDto = new MessageResponseDto("사진이 삭제되었습니다.", 200);
+        return messageResponseDto;
     }
 }
