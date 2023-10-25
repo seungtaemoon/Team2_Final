@@ -56,7 +56,9 @@ public class Posts extends TimeStamped {
         this.postCategory = postCategory;
         this.subTitle =subTitle;
         this.users = users;
+
     }
+
 
     public void unlike() {
         this.likeNum-=1;
