@@ -111,7 +111,6 @@ public class PostsService {
                 List<TripDate> tripDateList = tripDateRepository.findByPosts(posts);
 
                 postResponseDtoList.add(new PostResponseDto(posts, tags, posts.getUsers(), commentNum, tripDateList));
-
         }
         return postResponseDtoList;
     }
@@ -119,7 +118,7 @@ public class PostsService {
     // 키워드 검색
     public List<PostResponseDto> getKeywordPosts(String keyword){
 
-        if(keyword==null){ // 키워드가 null값인 경우
+        if(keyword==null || keyword.isEmpty()){ // 키워드가 null값인 경우
             throw new CustomException(ErrorCode.POST_NOT_SEARCH);
         }
 
@@ -162,6 +161,18 @@ public class PostsService {
             postResponseDtoList.add(new PostResponseDto(posts, posts.getUsers()));
         }
         return new PageImpl<>(postResponseDtoList, pageable, postsPage.getTotalElements());
+    }
+
+    // 사용자가 좋아요 누른 게시물 id만 조회
+    public List<Long> getUserLikePostsId(Users users) {
+
+        Users existUser = checkUser(users); // 사용자 조회
+        List<Long> idList = postsRepository.findUsersLikePostsId(existUser);
+
+        if (idList.isEmpty()) {
+            throw new CustomException(ErrorCode.POST_NOT_EXIST);
+        }
+        return idList;
     }
 
     // 게시글 좋아요 및 좋아요 취소
@@ -242,7 +253,7 @@ public class PostsService {
     }
 
     // ADMIN 권한 및 이메일 일치여부 메서드
-    private void checkAuthority(Users existUser,Users users){
+    public void checkAuthority(Users existUser, Users users){
         if (!existUser.getUserRole().equals(UserRoleEnum.ADMIN)&&!existUser.getEmail().equals(users.getEmail())) {throw new CustomException(ErrorCode.NOT_ALLOWED);
         }
     }
