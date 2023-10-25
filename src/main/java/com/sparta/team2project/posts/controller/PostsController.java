@@ -1,8 +1,13 @@
 package com.sparta.team2project.posts.controller;
 
 import com.sparta.team2project.commons.dto.MessageResponseDto;
+import com.sparta.team2project.commons.exceptionhandler.CustomException;
+import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
 import com.sparta.team2project.commons.security.UserDetailsImpl;
 
+import com.sparta.team2project.pictures.dto.PicturesMessageResponseDto;
+import com.sparta.team2project.pictures.dto.PicturesResponseDto;
+import com.sparta.team2project.pictures.dto.UploadResponseDto;
 import com.sparta.team2project.posts.dto.PostMessageResponseDto;
 import com.sparta.team2project.posts.dto.PostResponseDto;
 import com.sparta.team2project.posts.dto.TotalRequestDto;
@@ -19,6 +24,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -97,4 +103,46 @@ public class PostsController {
     public ResponseEntity<MessageResponseDto> deletePost(@PathVariable Long postId, @AuthenticationPrincipal UserDetailsImpl userDetails){
         return ResponseEntity.ok(postsService.deletePost(postId,userDetails.getUsers()));
     }
+
+    // 사진 등록 API (PUT) 메서드
+    @PutMapping("/posts/{postId}/postsPictures")
+    public PostsPicturesUploadResponseDto uploadPictures(@PathVariable("postId") Long postId,
+                                            @RequestPart("file") List<MultipartFile> files,
+                                            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        // 업로드할 사진이 3개를 초과하면 예외 출력
+        if(files.size() > 3){
+            throw new CustomException(ErrorCode.EXCEED_PICTURES_LIMIT);
+        }
+        // 그 외의 경우 업로드 수행
+        else{
+            return postsService.uploadPostsPictures(postId, files, userDetails.getUsers());
+        }
+    }
+
+    @GetMapping("/posts/{postId}/postsPictures")
+    public PostsPicturesUploadResponseDto getPostsPictures(@PathVariable("postId") Long postId){
+        return postsService.getPostsPictures(postId);
+    }
+
+    @GetMapping("/postsPictures/{postsPicturesId}")
+    public PostsPicturesResponseDto getPostsPicture(@PathVariable("postsPicturesId") Long postsPicturesId){
+        return postsService.getPostsPicture(postsPicturesId);
+    }
+
+    @PutMapping("/postsPictures/{postsPicturesId}")
+    public PostsPicturesMessageResponseDto updatePictures(@PathVariable("postsPicturesId") Long postsPicturesId,
+                                                     @RequestParam("file") MultipartFile file,
+                                                     @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        return postsService.updatePictures(postsPicturesId, file, userDetails.getUsers());
+    }
+
+    @DeleteMapping("/postsPictures/{postsPicturesId}")
+    public MessageResponseDto deletePictures(@PathVariable("postsPicturesId") Long postsPicturesId,
+                                             @AuthenticationPrincipal UserDetailsImpl userDetails
+    ){
+        return postsService.deletePictures(postsPicturesId, userDetails.getUsers());
+    }
+
 }
