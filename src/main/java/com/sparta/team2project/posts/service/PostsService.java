@@ -9,10 +9,6 @@ import com.sparta.team2project.commons.dto.MessageResponseDto;
 import com.sparta.team2project.commons.entity.UserRoleEnum;
 import com.sparta.team2project.commons.exceptionhandler.CustomException;
 import com.sparta.team2project.commons.exceptionhandler.ErrorCode;
-import com.sparta.team2project.pictures.dto.PicturesMessageResponseDto;
-import com.sparta.team2project.pictures.dto.PicturesResponseDto;
-import com.sparta.team2project.pictures.dto.UploadResponseDto;
-import com.sparta.team2project.pictures.entity.Pictures;
 import com.sparta.team2project.posts.dto.PostsPicturesResponseDto;
 import com.sparta.team2project.posts.dto.PostsPicturesUploadResponseDto;
 import com.sparta.team2project.posts.entity.PostsPictures;
@@ -24,8 +20,6 @@ import com.sparta.team2project.postslike.entity.PostsLike;
 import com.sparta.team2project.postslike.repository.PostsLikeRepository;
 import com.sparta.team2project.s3.AmazonS3ResourceStorage;
 import com.sparta.team2project.s3.CustomMultipartFile;
-import com.sparta.team2project.schedules.entity.Schedules;
-import com.sparta.team2project.schedules.repository.SchedulesRepository;
 import com.sparta.team2project.tags.entity.Tags;
 import com.sparta.team2project.tags.repository.TagsRepository;
 import com.sparta.team2project.tripdate.entity.TripDate;
@@ -121,7 +115,7 @@ public class PostsService {
         for(Posts posts:postsPage){
             int commentNum = commentsRepository.countByPosts(posts); // 댓글 세는 메서드
             List<Tags> tag = tagsRepository.findByPosts(posts);
-            postResponseDtoList.add(new PostResponseDto(posts, tag, posts.getUsers(), commentNum));
+            postResponseDtoList.add(new PostResponseDto(posts, posts.getUsers(), tag,commentNum));
         }
         return new SliceImpl<>(postResponseDtoList, pageable, postsPage.hasNext());
     }
@@ -294,7 +288,7 @@ public class PostsService {
         return postsRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_EXIST));
     }
 
-    // 전체 게시글 관련 반환 시 사용 메서드
+    // 상위 랭킹 및 검색 조회한 게시글 관련 반환 시 사용 메서드
     private List<PostResponseDto> getPostResponseDto(List<Posts> postsList) {
         if (postsList.isEmpty()) {
             throw new CustomException(ErrorCode.POST_NOT_EXIST);
