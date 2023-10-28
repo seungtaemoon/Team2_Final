@@ -1,6 +1,8 @@
 package com.sparta.team2project.comments;
 
+import com.sparta.team2project.comments.dto.CommentsMeResponseDto;
 import com.sparta.team2project.comments.dto.CommentsRequestDto;
+import com.sparta.team2project.comments.dto.CommentsResponseDto;
 import com.sparta.team2project.comments.entity.Comments;
 import com.sparta.team2project.comments.repository.CommentsRepository;
 import com.sparta.team2project.comments.service.CommentsService;
@@ -20,7 +22,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,7 +57,7 @@ public class CommentsServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    public CommentsRequestDto McokCommentsRequestDto() {
+    public CommentsRequestDto MockCommentsRequestDto() {
         CommentsRequestDto commentsRequestDto = mock(CommentsRequestDto.class);
         when(commentsRequestDto.getContents()).thenReturn("댓글");
         return commentsRequestDto;
@@ -66,13 +74,12 @@ public class CommentsServiceTest {
     }
 
     public Posts MockPosts(){
-        return new Posts("해돋이 보러간다", "정동진 해돋이", PostCategory.가족, "동해안 해돋이", MockUsers1());
+       return new Posts("해돋이 보러간다", "정동진 해돋이", PostCategory.가족, "동해안 해돋이", MockUsers1());
     }
 
     public Comments MockComments() {
-        return new Comments(McokCommentsRequestDto(), MockUsers1(), MockPosts());
+        return new Comments(MockCommentsRequestDto(), MockUsers1(), MockPosts());
     }
-
 
     @Test
     @DisplayName("[정상 작동] 댓글 생성")
@@ -80,7 +87,7 @@ public class CommentsServiceTest {
 
         // Given
         Long postId = 1L;
-        CommentsRequestDto requestDto = McokCommentsRequestDto();
+        CommentsRequestDto requestDto = MockCommentsRequestDto();
         Users users = MockUsers1(); // 사용자 정보 초기화
         Posts post = new Posts(); // 게시글 정보 초기화
 
@@ -97,12 +104,12 @@ public class CommentsServiceTest {
     }
 
     @Test
-    @DisplayName("[비정상 작동]댓글 생성")
+    @DisplayName("[비정상 작동]댓글 생성 (존재하지 않는 게시글)")
     public void commentsCreatePostNotFoundTest() {
 
         // Given
         Long postId = 1L;
-        CommentsRequestDto requestDto = McokCommentsRequestDto();
+        CommentsRequestDto requestDto = MockCommentsRequestDto();
         Users users = MockUsers1(); // 사용자 정보 초기화
 
         when(postsRepository.findById(postId)).thenReturn(Optional.empty());
@@ -119,12 +126,184 @@ public class CommentsServiceTest {
     }
 
     @Test
+    @DisplayName("[정상 작동] 댓글 조회 (내가 쓴 게시글에 댓글 작성시)")
+    public void commentsListMyPostTest() {
+
+        // Given
+        Long postId = 1L;
+        PageRequest pageable = PageRequest.of(0, 2);
+        Users users = MockUsers1(); // 사용자 정보 초기화
+        Posts posts = MockPosts(); // 게시글 정보 초기화
+
+        List<Comments> mockCommentsList = new ArrayList<>();
+        mockCommentsList.add(MockComments());
+        mockCommentsList.add(MockComments());
+        mockCommentsList.add(MockComments());
+
+        Slice<Comments> fakeSlice;
+        if (mockCommentsList.size() <= pageable.getPageSize()) {
+            fakeSlice = new SliceImpl<>(mockCommentsList, pageable, false);
+        } else {
+            fakeSlice = new SliceImpl<>(mockCommentsList, pageable, true);
+        }
+
+        when(postsRepository.findById(postId)).thenReturn(Optional.of(posts));
+        when(userRepository.findByEmail(users.getEmail())).thenReturn(Optional.of(posts.getUsers()));
+        when(commentsRepository.findByPosts_IdOrderByCreatedAtDesc(postId, pageable)).thenReturn(fakeSlice);
+
+        // When
+        Slice<CommentsResponseDto> response = commentsService.commentsList(postId, pageable);
+
+        // Then
+        System.out.println("내가 쓴 게시글에 글쓴이 나옴");
+        // 결과를 확인합니다.
+        assertNotNull(response);
+        assertTrue(response.hasNext());
+        assertEquals(mockCommentsList.size(), response.getNumberOfElements());
+    }
+
+    @Test
+    @DisplayName("[정상 작동] 댓글 조회")
+    public void commentsListTest() {
+
+        // Given
+        Long postId = 1L;
+        PageRequest pageable = PageRequest.of(0, 2);
+        Posts posts = MockPosts(); // 게시글 정보 초기화
+
+        List<Comments> mockCommentsList = new ArrayList<>();
+        mockCommentsList.add(MockComments());
+        mockCommentsList.add(MockComments());
+        mockCommentsList.add(MockComments());
+
+        Slice<Comments> fakeSlice;
+        if (mockCommentsList.size() <= pageable.getPageSize()) {
+            fakeSlice = new SliceImpl<>(mockCommentsList, pageable, false);
+        } else {
+            fakeSlice = new SliceImpl<>(mockCommentsList, pageable, true);
+        }
+
+        when(postsRepository.findById(postId)).thenReturn(Optional.of(posts));
+        when(commentsRepository.findByPosts_IdOrderByCreatedAtDesc(postId, pageable)).thenReturn(fakeSlice);
+
+        // When
+        Slice<CommentsResponseDto> response = commentsService.commentsList(postId, pageable);
+
+        // Then
+        System.out.println("댓글 조회");
+        // 결과를 확인합니다.
+        assertNotNull(response);
+        assertTrue(response.hasNext());
+        assertEquals(mockCommentsList.size(), response.getNumberOfElements());
+    }
+
+    @Test
+    @DisplayName("[비정상 작동]댓글 조회 (존재하지 않는 게시글)")
+    public void commentsListPostNotFoundTest() {
+
+        // Given
+        Long postId = 1L;
+        PageRequest pageable = PageRequest.of(0, 2);
+
+
+        when(postsRepository.findById(postId)).thenReturn(Optional.empty());
+
+        // When
+        CustomException exception = assertThrows(CustomException.class, () -> {
+            commentsService.commentsList(postId, pageable);
+        });
+
+        // Then
+        System.out.println("ErrorCode.POST_NOT_EXIST: " + "존재하지 않는 게시글입니다");
+        System.out.println("exception.getErrorCode(): " + exception.getErrorCode());
+        assertEquals(ErrorCode.POST_NOT_EXIST, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("[비정상 작동]댓글 조회 (존재하지 않는 댓글)")
+    public void commentsListCommentsNotExist() {
+
+        // Given
+        Long postId = 1L;
+        PageRequest pageable = PageRequest.of(0, 2);
+        Posts posts = MockPosts(); // 게시글 정보 초기화
+
+        when(postsRepository.findById(postId)).thenReturn(Optional.of(posts));
+        when(commentsRepository.findByPosts_IdOrderByCreatedAtDesc(postId, pageable)).thenReturn(new SliceImpl<>(Collections.emptyList()));
+
+        // When
+        CustomException exception = assertThrows(CustomException.class, () -> {
+            commentsService.commentsList(postId, pageable);
+        });
+
+        // Then
+        System.out.println("ErrorCode.COMMENTS_NOT_EXIST: " + "존재하지 않는 댓글입니다");
+        System.out.println("exception.getErrorCode(): " + exception.getErrorCode());
+        assertEquals(ErrorCode.COMMENTS_NOT_EXIST, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("[정상 작동] 내가 쓴 댓글 조회")
+    public void commentsMeListTest() {
+
+        // Given
+        Users users = MockUsers1(); // 사용자 정보 초기화
+        PageRequest pageable = PageRequest.of(0, 2);
+
+        List<Comments> mockCommentsList = new ArrayList<>();
+        mockCommentsList.add(MockComments());
+        mockCommentsList.add(MockComments());
+        mockCommentsList.add(MockComments());
+
+        Slice<Comments> fakeSlice;
+        if (mockCommentsList.size() <= pageable.getPageSize()) {
+            fakeSlice = new SliceImpl<>(mockCommentsList, pageable, false);
+        } else {
+            fakeSlice = new SliceImpl<>(mockCommentsList, pageable, true);
+        }
+
+
+        when(commentsRepository.findAllByAndEmailOrderByCreatedAtDesc(users.getEmail(), pageable)).thenReturn(fakeSlice);
+
+        // When
+        Slice<CommentsMeResponseDto> response = commentsService.commentsMeList(users, pageable);
+
+        // Then
+        System.out.println("내가 쓴 댓글 조회");
+        // 결과를 확인합니다.
+        assertNotNull(response);
+        assertTrue(response.hasNext());
+        assertEquals(mockCommentsList.size(), response.getNumberOfElements());
+    }
+
+    @Test
+    @DisplayName("[비정상 작동] 내가 쓴 댓글 조회 (존재하지 않는 댓글)")
+    public void commentsMeListCommentsNotExist() {
+
+        // Given
+        Users users = MockUsers1(); // 사용자 정보 초기화
+        PageRequest pageable = PageRequest.of(0, 2);
+
+        when(commentsRepository.findAllByAndEmailOrderByCreatedAtDesc(users.getEmail(), pageable)).thenReturn(new SliceImpl<>(Collections.emptyList()));
+
+        // When
+        CustomException exception = assertThrows(CustomException.class, () -> {
+            commentsService.commentsMeList(users, pageable);
+        });
+
+        // Then
+        System.out.println("ErrorCode.COMMENTS_NOT_EXIST: " + "존재하지 않는 댓글입니다");
+        System.out.println("exception.getErrorCode(): " + exception.getErrorCode());
+        assertEquals(ErrorCode.COMMENTS_NOT_EXIST, exception.getErrorCode());
+    }
+
+    @Test
     @DisplayName("[정상 작동] 본인이 쓴 댓글 수정 USER")
     public void commentsUpdateUserTest() {
 
         // Given
         Long commentId = 1L;
-        CommentsRequestDto requestDto = McokCommentsRequestDto();
+        CommentsRequestDto requestDto = MockCommentsRequestDto();
         Users users = MockUsers1(); // 사용자 정보 초기화
         Posts posts = MockPosts(); // 게시글 정보 초기화
         Comments comments = MockComments(); // 댓글 정보 초기화
@@ -148,7 +327,7 @@ public class CommentsServiceTest {
 
         // Given
         Long commentId = 1L;
-        CommentsRequestDto requestDto = McokCommentsRequestDto();
+        CommentsRequestDto requestDto = MockCommentsRequestDto();
         Users users = MockUsers1(); // 사용자 정보 초기화
         Users users1 = MockAdmin(); // 사용자 정보 초기화
         Posts posts = MockPosts(); // 게시글 정보 초기화
@@ -173,7 +352,7 @@ public class CommentsServiceTest {
 
         // Given
         Long commentId = 1L;
-        CommentsRequestDto requestDto = McokCommentsRequestDto();
+        CommentsRequestDto requestDto = MockCommentsRequestDto();
         Users users2 = MockUsers2(); // 사용자 정보 초기화
         Comments comments = MockComments(); // 댓글 정보 초기화
 

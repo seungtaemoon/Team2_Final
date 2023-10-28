@@ -28,7 +28,6 @@ import java.util.List;
 public class CommentsService {
     private final CommentsRepository commentsRepository;
     private final PostsRepository postsRepository;
-    private final UserRepository userRepository;
 
     // 댓글 생성
     public MessageResponseDto commentsCreate(Long postId,
