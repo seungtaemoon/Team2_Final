@@ -108,12 +108,12 @@ public class PostsController {
     }
 
     @GetMapping("/postsPictures/{postsPicturesId}")
-    public PostsPicturesResponseDto getPostsPicture(@PathVariable("postsPicturesId") Long postsPicturesId){
+    public String getPostsPicture(@PathVariable("postsPicturesId") Long postsPicturesId){
         return postsService.getPostsPicture(postsPicturesId);
     }
 
     @PutMapping("/postsPictures/{postsPicturesId}")
-    public PostsPicturesMessageResponseDto updatePictures(@PathVariable("postsPicturesId") Long postsPicturesId,
+    public String updatePictures(@PathVariable("postsPicturesId") Long postsPicturesId,
                                                      @RequestParam("file") MultipartFile file,
                                                      @AuthenticationPrincipal UserDetailsImpl userDetails
     ){

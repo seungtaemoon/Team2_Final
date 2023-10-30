@@ -424,7 +424,7 @@ public class PostsService {
         return postsPicturesUploadResponseDto;
     }
 
-    public PostsPicturesResponseDto getPostsPicture(Long postsPicturesId) {
+    public String getPostsPicture(Long postsPicturesId) {
         try {
             // 1. 파일을 찾아 열기
             PostsPictures postsPictures = postsPicturesRepository.findById(postsPicturesId).orElseThrow(
@@ -441,7 +441,7 @@ public class PostsService {
             s3ObjectInputStream.close();
             fileOutputStream.close();
             // 2. 사진 파일 정보(Pictures) 반환
-            return new PostsPicturesResponseDto(postsPictures);
+            return postsPictures.getPostsPicturesURL();
         } catch (AmazonServiceException e) {
             throw new AmazonServiceException(e.getErrorMessage());
         } catch (FileNotFoundException e) {
@@ -451,7 +451,7 @@ public class PostsService {
         }
     }
 
-    public PostsPicturesMessageResponseDto updatePictures(Long postsPicturesId, MultipartFile file, Users users) {
+    public String updatePictures(Long postsPicturesId, MultipartFile file, Users users) {
         Users existUser = checkUser(users); // 유저 확인
         checkAuthority(existUser, users);         // 권한 확인
         PostsPictures postsPictures = postsPicturesRepository.findById(postsPicturesId).orElseThrow(
@@ -479,9 +479,9 @@ public class PostsService {
         } catch (IOException e) {
             throw new CustomException(ErrorCode.S3_NOT_UPLOAD);
         }
-        MessageResponseDto messageResponseDto = new MessageResponseDto("사진이 업데이트 되었습니다.", 200);
-        PostsPicturesMessageResponseDto postsPicturesMessageResponseDto = new PostsPicturesMessageResponseDto(postsPicturesResponseDto, messageResponseDto);
-        return postsPicturesMessageResponseDto;
+//        MessageResponseDto messageResponseDto = new MessageResponseDto("사진이 업데이트 되었습니다.", 200);
+//        PostsPicturesMessageResponseDto postsPicturesMessageResponseDto = new PostsPicturesMessageResponseDto(postsPicturesResponseDto, messageResponseDto);
+        return postsPicturesURL;
     }
 
     public MessageResponseDto deletePictures(Long postsPicturesId, Users users) {
