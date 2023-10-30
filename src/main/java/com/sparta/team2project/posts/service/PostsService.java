@@ -360,8 +360,6 @@ public class PostsService {
             // 2. 이미지 리사이즈 함수 호출
             MultipartFile resizedImage = resizer(postsPicturesName, fileFormatName, file, 300);
             Long postsPictureSize = resizedImage.getSize();  // 단위: KBytes
-            PostsPicturesResponseDto postsPicturesResponseDto = new PostsPicturesResponseDto(
-                    postId, postsPicturesURL, postsPicturesName, postsPictureContentType, postsPictureSize);
             // 3. Repository에 파일 정보를 저장하기 위해 PicturesList에 저장(schedulesId 필요)
             Posts posts = postsRepository.findById(postId).orElseThrow(
                     () -> new CustomException(ErrorCode.ID_NOT_MATCH)
@@ -464,9 +462,6 @@ public class PostsService {
         // 2. 이미지 사이즈 재조정
         MultipartFile resizedImage = resizer(postsPicturesName, fileFormatName, file, 250);
         Long postsPictureSize = resizedImage.getSize();  // 단위: KBytes
-        Long postId = postsPictures.getPosts().getId();
-        PostsPicturesResponseDto postsPicturesResponseDto = new PostsPicturesResponseDto(
-                postId, postsPicturesURL, postsPicturesName, postsPictureContentType, postsPictureSize);
         postsPictures.updatePostsPictures(postsPicturesURL, postsPicturesName, postsPictureContentType, postsPictureSize);
         postsPicturesRepository.save(postsPictures);
         // 3. 사진을 메타데이터 및 정보와 함께 S3에 저장
