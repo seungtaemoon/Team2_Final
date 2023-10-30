@@ -480,16 +480,7 @@ public class PostsServiceTest {
 
         when(userRepository.findByEmail(user.getEmail())).thenReturn(java.util.Optional.of(user));
 
-        Users usersReturn = userRepository.findByEmail(user.getEmail()).orElseThrow(
-                () -> new CustomException(ErrorCode.ID_NOT_MATCH)
-        );
-
-
         when(postsRepository.findById(post.getId())).thenReturn(java.util.Optional.of(post));
-
-        Posts postsReturn = postsRepository.findById(post.getId()).orElseThrow(
-                () -> new CustomException(ErrorCode.POST_NOT_EXIST)
-        );
 
         UpdateRequestDto updateRequestDto = MockUpdateRequestDto();
 
